@@ -3,6 +3,37 @@
 > Implementation roadmap for [IDEA.md](./IDEA.md).  
 > Strategy: **UI demo with mock data first**, then wire Electron main process feature by feature.
 
+**Last updated:** 2026-06-06 · **App version:** `v0.1.0`
+
+---
+
+## Current status
+
+MVP core loop works on a real server: **connect → browse (local + remote) → edit → save → terminal → live metrics**.
+
+| Phase | Status | Notes |
+| ----- | ------ | ----- |
+| 0 UI shell | ✅ Done | Full layout, resize, dark theme |
+| 1 Servers | ✅ Done | SQLite CRUD + favorite toggle |
+| 2 SSH | ✅ Done | Connect / disconnect / test / status |
+| 3 Explorer | 🟡 Partial | List + path bar wired; mkdir/rename/delete still demo |
+| 4 Transfer | ⬜ Pending | Queue UI only (`mocks/transfers.ts`) |
+| 5 Editor | ✅ Done | Monaco open/save local + remote |
+| 6 Terminal | ✅ Done | xterm + `ssh2` shell, multi-tab, Open Terminal Here |
+| 7 Productivity | 🟡 Partial | Quick-cmd inject wired; favorites/cmds still mock |
+| 8 Monitoring | 🟡 Partial | Live metrics polling; threshold warnings not wired |
+| 9 Future | ⬜ Backlog | Packaging, keychain, Docker, etc. |
+
+**Also shipped (not a PLAN phase):** app branding (`KPort: SSH & SFTP Client`), icon pipeline (`scripts/generate-app-icon.js`), macOS dev Dock shell (`scripts/prepare-electron-shell.js`).
+
+### Next up (recommended order)
+
+1. **Phase 4** — Real upload/download + transfer queue worker
+2. **Phase 3 polish** — SFTP `mkdir` / `rename` / `delete` + wire explorer context menu
+3. **Phase 7** — Persist favorites + quick commands in SQLite
+4. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
+5. **Phase 9** — `electron-builder` (`.dmg` / `.exe`) + credential hardening
+
 ---
 
 ## Principles
@@ -45,40 +76,43 @@ flowchart LR
   Store --> Bridge --> IPC
 ```
 
-### Target project structure (after Phase 0)
+### Project structure (current)
 
 ```
 kport/
-├── IDEA.md
-├── PLAN.md
-├── package.json
+├── docs/IDEA.md, PLAN.md
+├── assets/                # icon-full-size.png (source)
+├── resources/             # Generated platform icons
+├── scripts/               # dev.js, generate-app-icon.js, prepare-electron-shell.js
 ├── electron.vite.config.ts
-├── src/
-│   ├── main/              # IPC handlers, ssh, db
-│   ├── preload/           # contextBridge API
-│   └── renderer/
-│       ├── components/    # layout, sidebar, explorer, editor, terminal...
-│       ├── mocks/         # mock data (Phase 0–1)
-│       ├── stores/        # Zustand stores
-│       └── types/         # shared UI ↔ IPC types
+└── src/
+    ├── main/              # IPC, ConnectionManager, terminal-manager, SQLite
+    ├── preload/           # window.kport API
+    ├── shared/            # IPC channels, types (ssh, sftp, terminal, …)
+    └── renderer/src/
+        ├── components/    # layout, explorer, editor, terminal (xterm)…
+        ├── hooks/         # useFileExplorer, useXTermSession, …
+        ├── services/      # IPC clients (ssh, sftp, terminal, fs)
+        ├── stores/        # Zustand
+        └── mocks/         # transfers, favorites, quickCommands (still used)
 ```
 
 ---
 
 ## Phase overview
 
-| Phase | Name              | UI demo                  | Wire real                   | Maps to [IDEA roadmap](./IDEA.md#development-roadmap) |
-| ----- | ----------------- | ------------------------ | --------------------------- | ----------------------------------------------------- |
-| 0     | UI Demo Shell     | Full layout + mocks      | electron-vite scaffold only | — (new; precedes IDEA Phase 1)                        |
-| 1     | Server Management | Reuse Phase 0 forms      | SQLite CRUD                 | Part of IDEA Phase 1                                  |
-| 2     | SSH Connection    | Status dots, header      | `ssh2` connect/test         | Part of IDEA Phase 1                                  |
-| 3     | File Explorer     | Reuse dual explorer      | SFTP + local `fs`           | Part of IDEA Phase 1                                  |
-| 4     | File Transfer     | Reuse transfer queue     | Upload/download worker      | Part of IDEA Phase 1                                  |
-| 5     | Code Editor       | Reuse Monaco tabs        | readFile / writeFile        | Part of IDEA Phase 2                                  |
-| 6     | SSH Terminal      | Reuse xterm tabs         | `ssh2` shell stream         | Part of IDEA Phase 2                                  |
-| 7     | Productivity      | Favorites, quick cmds UI | SQLite + clipboard + find   | IDEA Phase 3                                          |
-| 8     | Monitoring        | Header metric badges     | SSH exec polling            | IDEA Phase 4                                          |
-| 9     | Future            | —                        | Backlog                     | IDEA Phase 4 + Future Features                        |
+| Phase | Name              | Status | UI demo                  | Wire real                   | Maps to [IDEA roadmap](./IDEA.md#development-roadmap) |
+| ----- | ----------------- | ------ | ------------------------ | --------------------------- | ----------------------------------------------------- |
+| 0     | UI Demo Shell     | ✅     | Full layout + mocks      | electron-vite scaffold      | — (new; precedes IDEA Phase 1)                        |
+| 1     | Server Management | ✅     | Forms + list             | SQLite CRUD                 | Part of IDEA Phase 1                                  |
+| 2     | SSH Connection    | ✅     | Status dots, header      | `ssh2` connect/test         | Part of IDEA Phase 1                                  |
+| 3     | File Explorer     | 🟡     | Dual explorer + path bar | SFTP list + local `fs`      | Part of IDEA Phase 1                                  |
+| 4     | File Transfer     | ⬜     | Transfer queue panel     | Upload/download worker      | Part of IDEA Phase 1                                  |
+| 5     | Code Editor       | ✅     | Monaco tabs              | readFile / writeFile        | Part of IDEA Phase 2                                  |
+| 6     | SSH Terminal      | ✅     | xterm multi-tab          | `ssh2` shell stream         | Part of IDEA Phase 2                                  |
+| 7     | Productivity      | 🟡     | Favorites, quick cmds UI | SQLite + clipboard + find   | IDEA Phase 3                                          |
+| 8     | Monitoring        | 🟡     | Header badges            | SSH exec polling            | IDEA Phase 4                                          |
+| 9     | Future            | ⬜     | —                        | Backlog                     | IDEA Phase 4 + Future Features                        |
 
 ### IDEA roadmap cross-reference
 
@@ -93,16 +127,19 @@ kport/
 
 ### Recommended ship order (if compressed)
 
-1. **Phase 0** — UI demo (mandatory first step)
-2. **Phase 1 + 2** — servers + SSH
-3. **Phase 3 + 5** — browse + edit (core value)
-4. **Phase 6** — terminal
-5. **Phase 4** — transfer queue
-6. **Phase 7 + 8** — polish
+1. ~~**Phase 0** — UI demo~~ ✅
+2. ~~**Phase 1 + 2** — servers + SSH~~ ✅
+3. ~~**Phase 3 + 5** — browse + edit~~ 🟡 (browse list done; file ops pending)
+4. ~~**Phase 6** — terminal~~ ✅
+5. **Phase 4** — transfer queue ← **next**
+6. **Phase 3 polish + 7 + 8** — SFTP ops, favorites, health warnings
+7. **Phase 9** — packaging + security
 
 ---
 
 ## Phase 0 — UI Demo Shell
+
+**Status:** ✅ Done
 
 **Goal:** Clickable product demo with full layout. No real SSH.
 
@@ -138,6 +175,8 @@ kport/
 ---
 
 ## Phase 1 — Server Management
+
+**Status:** ✅ Done
 
 **Goal:** Persist server list locally; UI no longer hardcoded.
 
@@ -180,6 +219,8 @@ Phase 1 uses basic credential storage. Before public release: OS keychain integr
 
 ## Phase 2 — SSH Connection Flow
 
+**Status:** ✅ Done
+
 **Goal:** Real connect, disconnect, and test connection via `ssh2`.
 
 ### UI demo
@@ -218,29 +259,37 @@ sequenceDiagram
 
 ## Phase 3 — Remote File Explorer (SFTP)
 
+**Status:** 🟡 Partial — browse wired; mutations still demo
+
 **Goal:** Browse real remote directories; local explorer reads host filesystem.
 
-### UI demo
+### Done
 
-Reuse Phase 0 dual explorer. Add loading spinners, error banners, breadcrumb (if not already present).
+- IPC: `sftp.list`, `fs.list`, `fs.getPaths`
+- Remote + local dual explorer with loading/error states
+- Path bar with autocomplete, Enter navigate, Tab complete, `cd ..` back button
+- Directory listing cache + prefetch on connect
+- Double-click folder → navigate; double-click file → open editor (Phase 5)
+- Open Terminal Here → new tab + one-time `cd` (Phase 6)
+- **No terminal cwd coupling** on explorer navigation ✅
 
-### Wire real
+### Remaining
 
-- IPC: `sftp.list`, `sftp.mkdir`, `sftp.rename`, `sftp.delete`
-- Remote tree: lazy folder load, breadcrumb navigation
-- Local tree: `dialog.showOpenDialog` for root or default to home directory via `fs`
-- Context menu actions call real SFTP (remote) or `fs` (local)
-- Double-click folder → navigate explorer only; double-click file → open editor tab (content wired in Phase 5)
-- **No coupling to terminal cwd** — tree navigation must not call `cd` or update any terminal tab
+- IPC: `sftp.mkdir`, `sftp.rename`, `sftp.delete`
+- Wire context menu: Rename, Delete, Upload, Download (currently `demoAction` toast)
+- Local explorer: optional `dialog.showOpenDialog` for custom root
+- Unzip action (backlog / demo only today)
 
 ### Done when
 
-- Browse `/var/www` (or equivalent) on a connected server
-- Create, rename, delete files and folders on remote
+- ~~Browse `/var/www` (or equivalent) on a connected server~~ ✅
+- Create, rename, delete files and folders on remote ⬜
 
 ---
 
 ## Phase 4 — File Transfer
+
+**Status:** ⬜ Pending — UI shell only (`src/renderer/mocks/transfers.ts`)
 
 **Goal:** Real upload/download with live transfer queue.
 
@@ -265,114 +314,116 @@ Reuse Phase 0 transfer queue panel. Wire to store events instead of static mocks
 
 ## Phase 5 — Code Editor (Monaco)
 
+**Status:** ✅ Done (dirty-tab confirm dialog still optional)
+
 **Goal:** Open → download → edit → save → upload workflow.
 
-### UI demo
+### Done
 
-Reuse Phase 0 Monaco tabs. Wire open/save actions to store; content from mock until IPC ready.
-
-### Wire real
-
-- IPC: `sftp.readFile`, `sftp.writeFile`
-- Open tab: fetch remote content; set Monaco language from file extension
-- Save (`Cmd+S` / `Ctrl+S`): upload if dirty; toast on success/failure
-- Close dirty tab → confirmation dialog
+- IPC: `sftp.readFile`, `sftp.writeFile`, `fs.readFile`, `fs.writeFile`
+- Open tab: fetch local/remote content; Monaco language from extension
+- Save (`Cmd+S` / `Ctrl+S`): write back; toast on success/failure
 - Search / replace: Monaco built-in
 
-Supported languages per [IDEA — Code Editor](./IDEA.md#code-editor).
+### Remaining
+
+- Close dirty tab → confirmation dialog
 
 ### Done when
 
-- Edit `.env`, `nginx.conf`, or similar on server and save back successfully
+- ~~Edit `.env`, `nginx.conf`, or similar on server and save back successfully~~ ✅
 
 ---
 
 ## Phase 6 — SSH Terminal
 
+**Status:** ✅ Done
+
 **Goal:** Real interactive terminal over SSH shell channel.
 
-### UI demo
+### Done
 
-Reuse Phase 0 xterm tabs. Multiple tabs, **+** to add tab, active tab indicator, panel toggle.
+- IPC: `terminal.create`, `terminal.write`, `terminal.resize`, `terminal.destroy`, `terminal:data`, `terminal:exit`
+- Main: `terminal-manager.ts` — one `ssh2` shell channel per `terminalId`
+- Renderer: `@xterm/xterm` + `@xterm/addon-fit`, multi-tab, per-tab `serverId`
+- Quick commands sidebar → inject into active tab (`writeTerminal`)
+- Open Terminal Here → new tab + one-time `cd`
+- Client-generated `terminalId` before subscribe (avoids output race)
+- Disconnect server → destroy all shells for that server
 
-### Wire real
+> **Note:** `node-pty` is only for a **local** shell. SSH uses `ssh2` shell stream.
 
-- IPC: `terminal.create`, `terminal.write`, `terminal.resize`, `terminal.destroy`
-- Main: `sshClient.shell()` stream ↔ xterm (via IPC byte forwarding)
-- **One SSH shell channel per terminal tab** (`terminalId`), all tabs share the same `sessionId` (server connection) but **not** the same cwd or scrollback
-- Renderer model: `TerminalTab { id, title, sessionId, terminalId, initialCwd?, ... }` — cwd is metadata for prompt display; actual cwd lives on the server shell unless user runs `cd`
-- Copy / paste, fit-on-resize addon
-- **Explorer navigation does not sync cwd** — browsing the remote tree never updates open terminals
-- **Open Terminal Here only:** context menu → `terminal.create({ sessionId, initialCwd })` → new tab → after shell ready, write `cd <path>\n` **once** in that tab; leave other tabs untouched
-
-> **Note:** `node-pty` is only needed for a **local** shell. SSH terminals use the `ssh2` shell stream, not `node-pty`.
-
-> **Design rule:** Multiple tabs exist so users can work in parallel directories. Auto-following explorer clicks would fight that model and surprise users who expect each tab to stay put.
+> **Design rule:** Explorer navigation does not sync terminal cwd.
 
 ### Done when
 
-- Run `docker ps`, `pm2 status`, `nginx -t` on a connected server from the app
+- ~~Run `docker ps`, `pm2 status`, `nginx -t` on a connected server from the app~~ ✅
 
 ---
 
 ## Phase 7 — Productivity Layer
 
+**Status:** 🟡 Partial
+
 **Goal:** Speed features — mostly DB + UI wiring.
 
-### UI demo
-
-Sidebar sections for Favorites and Quick Commands (mock in Phase 0; now persisted).
-
-### Wire real
-
-| Feature              | Implementation                                       |
-| -------------------- | ---------------------------------------------------- |
-| Favorite directories | SQLite, per server; click → navigate remote explorer only (not terminal cwd) |
-| Quick commands       | SQLite; click → inject into **active** terminal tab only (does not change explorer path) |
-| Open Terminal Here   | New terminal tab + one-time `cd` (Phase 6); never updates existing tabs |
-| Copy path            | Clipboard API on selected file                       |
-| Search remote files  | SSH exec `find` with path scope + timeout            |
-
-Examples from [IDEA — Productivity Features](./IDEA.md#productivity-features).
+| Feature              | Status | Implementation |
+| -------------------- | ------ | -------------- |
+| Open Terminal Here   | ✅     | Phase 6 — new tab + one-time `cd` |
+| Quick commands       | 🟡     | Inject wired; list still `mocks/quickCommands.ts` |
+| Favorite directories | ⬜     | UI mock `mocks/favorites.ts`; needs SQLite |
+| Copy path            | 🟡     | `navigator.clipboard` works; still shows demo toast |
+| Search remote files  | ⬜     | SSH exec `find` with timeout |
 
 ### Done when
 
-- Bookmark `/var/www`, one-click `nginx -t`, search `nginx.conf` under `/etc`
+- Bookmark `/var/www` ⬜
+- One-click `nginx -t` ✅ (via quick command inject)
+- Search `nginx.conf` under `/etc` ⬜
 
 ---
 
 ## Phase 8 — Monitoring + Health Warnings
 
+**Status:** 🟡 Partial — live metrics yes; threshold warnings no
+
 **Goal:** Live server metrics in header; threshold warnings.
 
-### UI demo
+### Done
 
-Reuse Phase 0 header badges. Warning styling when mock values exceed thresholds.
+- Poll every 5s while connected (`METRICS_POLL_INTERVAL_MS`)
+- Linux parsers via SSH exec (`src/main/ssh/metrics.ts`)
+- IPC: `ssh.getMetrics` → header badges (CPU, RAM, disk per mount, load)
+- Disk mounts filtered (> 5 GB)
 
-### Wire real
+### Remaining
 
-- Poll every 5s while connected (configurable)
-- Linux-first parsers: `free`, `df`, `/proc/loadavg` (or equivalent SSH exec)
-- IPC: `metrics.subscribe` / `metrics:update` push events
-- Thresholds from [IDEA — Health Warnings](./IDEA.md#health-warnings): CPU > 90%, RAM > 85%, Disk > 90%, high load
+- Push model: `metrics.subscribe` / `metrics:update` events (optional; invoke polling works today)
+- Threshold warnings: CPU > 90%, RAM > 85%, Disk > 90%, high load
 
 ### Done when
 
-- Header reflects real server stats
-- Warning badges appear when thresholds exceeded
+- ~~Header reflects real server stats~~ ✅
+- Warning badges appear when thresholds exceeded ⬜
 
 ---
 
 ## Phase 9 — Future (backlog)
 
-Does not block MVP. Items from [IDEA — Future Features](./IDEA.md#future-features):
+**Status:** ⬜ Not started (except dev tooling below)
 
-- Docker integration (CLI wrapper)
-- Log viewer presets (Nginx, PM2, Docker)
-- File comparison (local vs remote diff)
-- Permission manager (`chmod`, `chown`)
-- Credential keychain hardening
-- `electron-builder` packaging (Windows, macOS, Linux)
+Does not block daily dev use. Items from [IDEA — Future Features](./IDEA.md#future-features):
+
+| Item | Status |
+| ---- | ------ |
+| `electron-builder` packaging (`.dmg` / `.exe` / AppImage) | ⬜ |
+| Credential keychain / encrypt-at-rest | ⬜ (passwords plaintext in SQLite today) |
+| App icon + macOS dev Dock branding | ✅ `scripts/generate-app-icon.js`, `prepare-electron-shell.js` |
+| `yarn preview` custom Electron shell | ⬜ (still `electron-vite preview` direct; see dev script pattern) |
+| Docker integration (CLI wrapper) | ⬜ |
+| Log viewer presets (Nginx, PM2, Docker) | ⬜ |
+| File comparison (local vs remote diff) | ⬜ |
+| Permission manager (`chmod`, `chown`) | ⬜ |
 
 Non-goals for early versions: see [IDEA — Non Goals](./IDEA.md#non-goals).
 
@@ -380,78 +431,73 @@ Non-goals for early versions: see [IDEA — Non Goals](./IDEA.md#non-goals).
 
 ## IPC API sketch
 
-Typed preload surface exposed as `window.kport`. Channels grouped by phase.
+Typed preload surface exposed as `window.kport`. Implementation status:
 
-### Phase 1 — Servers
+### Phase 1 — Servers ✅
 
-| Method           | Type   | Description            |
-| ---------------- | ------ | ---------------------- |
-| `servers.list`   | invoke | List all saved servers |
-| `servers.create` | invoke | Create server record   |
-| `servers.update` | invoke | Update server record   |
-| `servers.delete` | invoke | Delete server record   |
+| Method                    | Status |
+| ------------------------- | ------ |
+| `servers.list/create/update/delete` | ✅ |
+| `servers.toggleFavorite`  | ✅     |
 
-### Phase 2 — SSH
+### Phase 2 — SSH ✅
 
-| Method           | Type   | Description                                 |
-| ---------------- | ------ | ------------------------------------------- |
-| `ssh.connect`    | invoke | Connect; returns `{ sessionId }`            |
-| `ssh.disconnect` | invoke | Tear down session                           |
-| `ssh.test`       | invoke | Test credentials without persisting session |
-| `ssh.getStatus`  | invoke | `{ serverId, status, error? }`              |
+| Method           | Status |
+| ---------------- | ------ |
+| `ssh.connect`    | ✅     |
+| `ssh.disconnect` | ✅     |
+| `ssh.test`       | ✅     |
+| `ssh.getStatus`  | ✅     |
+| `ssh.getMetrics` | ✅     |
 
-### Phase 3 — SFTP
+### Phase 3 — SFTP 🟡
 
-| Method        | Type   | Description                     |
-| ------------- | ------ | ------------------------------- |
-| `sftp.list`   | invoke | `{ sessionId, path }` → entries |
-| `sftp.mkdir`  | invoke | Create remote directory         |
-| `sftp.rename` | invoke | Rename remote path              |
-| `sftp.delete` | invoke | Delete remote file or directory |
+| Method           | Status |
+| ---------------- | ------ |
+| `sftp.list`      | ✅     |
+| `sftp.readFile`  | ✅     |
+| `sftp.writeFile` | ✅     |
+| `sftp.mkdir`     | ⬜     |
+| `sftp.rename`    | ⬜     |
+| `sftp.delete`    | ⬜     |
 
-### Phase 4 — Transfer
+### Phase 3 — Local FS ✅
 
-| Method              | Type   | Description                       |
-| ------------------- | ------ | --------------------------------- |
-| `transfer.upload`   | invoke | Enqueue upload job                |
-| `transfer.download` | invoke | Enqueue download job              |
-| `transfer.cancel`   | invoke | Cancel job by id                  |
-| `transfer.retry`    | invoke | Retry failed job                  |
-| `transfer:progress` | event  | `{ jobId, bytes, total, status }` |
+| Method        | Status |
+| ------------- | ------ |
+| `fs.getPaths` | ✅     |
+| `fs.list`     | ✅     |
+| `fs.readFile` | ✅     |
+| `fs.writeFile`| ✅     |
 
-### Phase 5 — Editor
+### Phase 4 — Transfer ⬜
 
-| Method           | Type   | Description                         |
-| ---------------- | ------ | ----------------------------------- |
-| `sftp.readFile`  | invoke | Read remote file as string / buffer |
-| `sftp.writeFile` | invoke | Write content to remote path        |
+| Method              | Status |
+| ------------------- | ------ |
+| `transfer.upload`   | ⬜     |
+| `transfer.download` | ⬜     |
+| `transfer.cancel`   | ⬜     |
+| `transfer.retry`    | ⬜     |
+| `transfer:progress` | ⬜     |
 
-### Phase 6 — Terminal
+### Phase 6 — Terminal ✅
 
-| Method             | Type   | Description                              |
-| ------------------ | ------ | ---------------------------------------- |
-| `terminal.create`  | invoke | `{ sessionId, initialCwd? }` → `{ terminalId }` — `initialCwd` only for **new** tab (Open Terminal Here); not used on explorer browse |
-| `terminal.write`   | invoke | Send input bytes                         |
-| `terminal.resize`  | invoke | `{ cols, rows }`                         |
-| `terminal.destroy` | invoke | Close terminal session                   |
-| `terminal:data`    | event  | Output stream to renderer                |
+| Method             | Status |
+| ------------------ | ------ |
+| `terminal.create`  | ✅     |
+| `terminal.write`   | ✅     |
+| `terminal.resize`  | ✅     |
+| `terminal.destroy` | ✅     |
+| `terminal:data`    | ✅ event |
+| `terminal:exit`    | ✅ event |
 
-### Phase 7 — Productivity
+### Phase 7 — Productivity ⬜
 
-| Method                     | Type   | Description               |
-| -------------------------- | ------ | ------------------------- |
-| `favorites.list`           | invoke | List favorites for server |
-| `favorites.add` / `remove` | invoke | Manage bookmarks          |
-| `commands.list`            | invoke | Quick commands CRUD       |
-| `search.files`             | invoke | Remote filename search    |
-
-### Phase 8 — Metrics
-
-| Method                | Type   | Description                |
-| --------------------- | ------ | -------------------------- |
-| `metrics.subscribe`   | invoke | Start polling for session  |
-| `metrics.unsubscribe` | invoke | Stop polling               |
-| `metrics:update`      | event  | `{ cpu, ram, disk, load }` |
+| Method                     | Status |
+| -------------------------- | ------ |
+| `favorites.list/add/remove`| ⬜     |
+| `commands.list`            | ⬜     |
+| `search.files`             | ⬜     |
 
 ---
 
@@ -556,13 +602,16 @@ interface QuickCommand {
 
 ## Success criteria
 
-From [IDEA — Success Criteria](./IDEA.md#success-criteria). MVP is met when Phases 0–6 (minimum) and ideally 4 + 8 are complete:
+From [IDEA — Success Criteria](./IDEA.md#success-criteria).
 
-- Connect to a server within seconds
-- Edit remote files
-- Upload deployments
-- View logs (terminal + Phase 9 log viewer)
-- Restart services (terminal)
-- Troubleshoot production issues
+| Criterion | Status |
+| --------- | ------ |
+| Connect to a server within seconds | ✅ |
+| Edit remote files | ✅ |
+| Upload deployments | ⬜ Phase 4 |
+| View logs (terminal) | ✅ |
+| Restart services (terminal) | ✅ |
+| Troubleshoot production issues | 🟡 (terminal yes; transfer + file ops partial) |
 
-All without leaving the application.
+**MVP bar:** Phases 0–6 minimum → **met** except full file-ops + upload/download.  
+**Ship bar:** add Phase 4 + Phase 3 mutations + `electron-builder`.
