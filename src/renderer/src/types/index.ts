@@ -41,7 +41,7 @@ export interface TransferJob {
   error?: string
 }
 
-export type { ServerMetrics } from '../../../shared/metrics'
+export type { DiskMetrics, ServerMetrics } from '../../../shared/metrics'
 
 export interface FavoriteDirectory {
   id: string

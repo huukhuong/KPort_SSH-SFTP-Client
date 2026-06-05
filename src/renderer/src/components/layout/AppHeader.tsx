@@ -40,7 +40,11 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
         </div>
       </Group>
 
-      <Group gap="xs" wrap="nowrap">
+      <Group
+        gap="xs"
+        wrap="nowrap"
+        style={{ flexShrink: 1, maxWidth: '58%', overflowX: 'auto', scrollbarWidth: 'thin' }}
+      >
         <MetricBadge
           icon={<IconCpu size={12} />}
           label="CPU"
@@ -57,16 +61,23 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
           )}
           loading={metricsLoading && !metrics}
         />
-        <MetricBadge
-          icon={<IconDatabase size={12} />}
-          label="Disk"
-          value={formatMetricValue(
-            isConnected,
-            metrics,
-            (value) => `${value.diskUsedGb} / ${value.diskTotalGb} GB`,
-          )}
-          loading={metricsLoading && !metrics}
-        />
+        {isConnected && metrics && metrics.disks.length > 0
+          ? metrics.disks.map((disk) => (
+              <MetricBadge
+                key={disk.mount}
+                icon={<IconDatabase size={12} />}
+                label={formatDiskLabel(disk.mount)}
+                value={`${disk.usedGb} / ${disk.totalGb} GB`}
+              />
+            ))
+          : (
+              <MetricBadge
+                icon={<IconDatabase size={12} />}
+                label="Disk"
+                value={!isConnected ? '—' : metricsLoading && !metrics ? '…' : '—'}
+                loading={metricsLoading && !metrics}
+              />
+            )}
         <MetricBadge
           icon={<IconActivity size={12} />}
           label="Load"
@@ -76,6 +87,10 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
       </Group>
     </Group>
   )
+}
+
+function formatDiskLabel(mount: string): string {
+  return mount === '/' ? 'Disk /' : mount
 }
 
 function formatMetricValue<T>(
