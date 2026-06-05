@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron'
 import { IPC_CHANNELS } from '../../shared/ipc-channels'
+import { readLocalFile } from '../fs/read'
+import { writeLocalFile } from '../fs/write'
 import { getLocalPaths, listLocalDirectory } from '../fs/list'
 
 function mapFsError(error: unknown): string {
@@ -9,6 +11,7 @@ function mapFsError(error: unknown): string {
   if (lower.includes('enoent')) return 'Directory not found'
   if (lower.includes('eacces') || lower.includes('eperm')) return 'Permission denied'
   if (lower.includes('enotdir')) return 'Not a directory'
+  if (lower.includes('eisdir')) return 'Not a file'
 
   return message
 }
@@ -19,6 +22,22 @@ export function registerFsIpcHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.FS_LIST, async (_event, path: string) => {
     try {
       return await listLocalDirectory(path)
+    } catch (error) {
+      throw new Error(mapFsError(error))
+    }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.FS_READ_FILE, async (_event, path: string) => {
+    try {
+      return await readLocalFile(path)
+    } catch (error) {
+      throw new Error(mapFsError(error))
+    }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.FS_WRITE_FILE, async (_event, path: string, content: string) => {
+    try {
+      await writeLocalFile(path, content)
     } catch (error) {
       throw new Error(mapFsError(error))
     }

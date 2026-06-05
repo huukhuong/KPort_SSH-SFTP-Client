@@ -11,10 +11,15 @@ import {
 import { listLocalDirectory } from '../services/fs'
 import { listRemoteDirectory } from '../services/sftp'
 import { useExplorerStore } from '../stores/explorerStore'
-import { useEditorStore } from '../stores/editorStore'
+import { useEditorActions } from './useEditorActions'
 import { useServerStore } from '../stores/serverStore'
 import type { FileTreeNode } from '../types/fileTree'
-import { getBreadcrumbSegments, isZipFile, normalizeExplorerPath } from '../utils/fileTree'
+import {
+  getBreadcrumbSegments,
+  getParentExplorerPath,
+  isZipFile,
+  normalizeExplorerPath,
+} from '../utils/fileTree'
 import { demoAction } from '../utils/demoNotify'
 
 export function useFileExplorer(side: 'local' | 'remote') {
@@ -39,7 +44,22 @@ export function useFileExplorer(side: 'local' | 'remote') {
   )
   const select = useExplorerStore((state) => (isLocal ? state.selectLocal : state.selectRemote))
 
-  const openFile = useEditorStore((state) => state.openFile)
+  const isConnected = activeServer?.status === 'connected'
+  const isConnecting = activeServer?.status === 'connecting'
+  const serverId = activeServer?.id
+
+  const parentPath = useMemo(
+    () => getParentExplorerPath(currentPath, rootPath),
+    [currentPath, rootPath],
+  )
+
+  const navigateUp = useCallback(() => {
+    if (parentPath) {
+      navigate(parentPath)
+    }
+  }, [navigate, parentPath])
+
+  const { openFile } = useEditorActions()
   const { openTerminalHere } = useTerminal()
 
   const [contextMenu, setContextMenu] = useState<ExplorerContextTarget | null>(null)
@@ -48,9 +68,6 @@ export function useFileExplorer(side: 'local' | 'remote') {
   const [listError, setListError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  const isConnected = activeServer?.status === 'connected'
-  const isConnecting = activeServer?.status === 'connecting'
-  const serverId = activeServer?.id
   const cacheScope = isLocal
     ? directoryCacheScopes.local
     : serverId
@@ -186,9 +203,13 @@ export function useFileExplorer(side: 'local' | 'remote') {
         return
       }
 
-      openFile(node.path)
+      void openFile({
+        path: node.path,
+        side: isLocal ? 'local' : 'remote',
+        serverId: isLocal ? null : serverId,
+      })
     },
-    [isLocal, navigate, openFile],
+    [isLocal, navigate, openFile, serverId],
   )
 
   const openContextMenu = useCallback(
@@ -224,8 +245,11 @@ export function useFileExplorer(side: 'local' | 'remote') {
     accent: isLocal ? ('local' as const) : ('remote' as const),
     currentPath,
     homePath,
+    serverId: serverId ?? null,
     atHome,
     atRoot,
+    canGoUp: parentPath !== null,
+    parentPath,
     breadcrumbs,
     entries,
     loading,
@@ -243,6 +267,7 @@ export function useFileExplorer(side: 'local' | 'remote') {
       upload,
       navigateRoot,
       navigateHome,
+      navigateUp,
       openTerminalHere: isLocal ? undefined : openTerminalHere,
     },
   }

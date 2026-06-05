@@ -21,12 +21,20 @@ export interface FileEntry {
   modifiedAt?: string
 }
 
+export type EditorTabStatus = 'loading' | 'ready' | 'error'
+
 export interface EditorTab {
   id: string
   path: string
+  side: 'local' | 'remote'
+  serverId: string | null
   language: string
   content: string
+  savedContent: string
   isDirty: boolean
+  status: EditorTabStatus
+  error?: string
+  saving?: boolean
 }
 
 export type TransferStatus = 'queued' | 'active' | 'completed' | 'failed' | 'cancelled'

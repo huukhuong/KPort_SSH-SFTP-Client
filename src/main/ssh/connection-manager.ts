@@ -3,6 +3,8 @@ import type { ServerFormInput } from '../../shared/server'
 import type { ConnectionStatus } from '../../shared/ssh'
 import { getServerCredentials, type ServerCredentials } from '../db/servers'
 import { buildConnectConfigFromCredentials, buildConnectConfigFromForm } from './config'
+import { directoryListingCache } from '../sftp/directory-cache'
+import { prefetchRemoteTree } from '../sftp/prefetch'
 import { mapSshError } from './errors'
 
 interface ManagedConnection {
@@ -54,13 +56,18 @@ class ConnectionManager {
     }
 
     const credentials = getServerCredentials(serverId)
-    return this.openConnection(serverId, credentials)
+    const result = await this.openConnection(serverId, credentials)
+    void prefetchRemoteTree(serverId, result.homePath).catch((error) => {
+      console.warn('[KPort] Remote directory prefetch failed:', error)
+    })
+    return result
   }
 
   async disconnect(serverId: string): Promise<void> {
     const connection = this.connections.get(serverId)
     if (!connection) return
 
+    directoryListingCache.clear(serverId)
     connection.status = 'disconnected'
     this.connections.delete(serverId)
 

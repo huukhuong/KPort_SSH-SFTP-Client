@@ -23,10 +23,17 @@ const api: KPortApi = {
   sftp: {
     list: (serverId: string, path: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_LIST, serverId, path),
+    readFile: (serverId: string, path: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SFTP_READ_FILE, serverId, path),
+    writeFile: (serverId: string, path: string, content: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SFTP_WRITE_FILE, serverId, path, content),
   },
   fs: {
     getPaths: () => ipcRenderer.invoke(IPC_CHANNELS.FS_GET_PATHS),
     list: (path: string) => ipcRenderer.invoke(IPC_CHANNELS.FS_LIST, path),
+    readFile: (path: string) => ipcRenderer.invoke(IPC_CHANNELS.FS_READ_FILE, path),
+    writeFile: (path: string, content: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.FS_WRITE_FILE, path, content),
   },
 }
 

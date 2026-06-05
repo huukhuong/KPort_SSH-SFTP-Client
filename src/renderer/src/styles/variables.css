@@ -33,4 +33,16 @@
   --app-active: color-mix(in srgb, var(--mantine-color-blue-7) 14%, var(--mantine-color-dark-8));
   --app-active-border: var(--mantine-color-blue-6);
   --app-section-label: var(--mantine-color-dark-2);
+
+  --app-toast-success-bg: color-mix(in srgb, #4ade80 16%, var(--mantine-color-dark-7));
+  --app-toast-success-border: color-mix(in srgb, #4ade80 38%, var(--mantine-color-dark-5));
+  --app-toast-success-accent: #4ade80;
+
+  --app-toast-error-bg: color-mix(in srgb, #f87171 16%, var(--mantine-color-dark-7));
+  --app-toast-error-border: color-mix(in srgb, #f87171 38%, var(--mantine-color-dark-5));
+  --app-toast-error-accent: #f87171;
+
+  --app-toast-info-bg: color-mix(in srgb, var(--mantine-color-blue-4) 14%, var(--mantine-color-dark-7));
+  --app-toast-info-border: color-mix(in srgb, var(--mantine-color-blue-4) 34%, var(--mantine-color-dark-5));
+  --app-toast-info-accent: var(--mantine-color-blue-4);
 }

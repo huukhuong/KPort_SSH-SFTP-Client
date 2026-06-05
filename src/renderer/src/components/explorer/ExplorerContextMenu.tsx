@@ -59,15 +59,7 @@ export function ExplorerContextMenu({
           onClick={() => run('Unzip', () => demoAction('Unzip', unzipDetail))}
         />
       ) : (
-        <ContextItem
-          label="Open"
-          onClick={() =>
-            run('Open', () => {
-              onOpen(node)
-              demoAction('Open', node.path)
-            })
-          }
-        />
+        <ContextItem label="Open" onClick={() => run('Open', () => onOpen(node))} />
       )}
       <ContextItem label="Rename" onClick={() => run('Rename', () => demoAction('Rename', `Rename ${name}`))} />
       <ContextItem

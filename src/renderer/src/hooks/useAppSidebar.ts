@@ -17,6 +17,13 @@ export function useAppSidebar() {
   const navigateRemote = useExplorerStore((state) => state.navigateRemote)
   const { injectCommand } = useTerminal()
 
+  const navigateFavorite = useCallback(
+    (path: string) => {
+      navigateRemote(path)
+    },
+    [navigateRemote],
+  )
+
   const favorites = useMemo(
     () => mockFavorites.filter((item) => item.serverId === activeServerId),
     [activeServerId],
@@ -64,7 +71,7 @@ export function useAppSidebar() {
       setActiveServer,
       connectToServer,
       toggleFavorite,
-      navigateRemote,
+      navigateFavorite,
       injectCommand,
     },
   }

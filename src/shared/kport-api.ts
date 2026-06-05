@@ -22,11 +22,15 @@ export interface SshApi {
 
 export interface SftpApi {
   list: (serverId: string, path: string) => Promise<RemoteFileEntry[]>
+  readFile: (serverId: string, path: string) => Promise<string>
+  writeFile: (serverId: string, path: string, content: string) => Promise<void>
 }
 
 export interface FsApi {
   getPaths: () => Promise<LocalPathsInfo>
   list: (path: string) => Promise<LocalFileEntry[]>
+  readFile: (path: string) => Promise<string>
+  writeFile: (path: string, content: string) => Promise<void>
 }
 
 export interface KPortApi {

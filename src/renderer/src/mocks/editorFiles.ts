@@ -1,56 +1,75 @@
 import type { EditorTab } from '../types'
+import { getLanguageForPath } from '../utils/editorLanguage'
 
-export const mockEditorTabs: EditorTab[] = [
-  {
-    id: 'env',
-    path: '/var/www/api/.env',
-    language: 'ini',
-    content: `NODE_ENV=production
+const envContent = `NODE_ENV=production
 PORT=3000
 DATABASE_URL=postgres://localhost:5432/app
 REDIS_URL=redis://localhost:6379
-JWT_SECRET=********`,
-    isDirty: true,
-  },
-  {
-    id: 'nginx',
-    path: '/etc/nginx/nginx.conf',
-    language: 'nginx',
-    content: `server {
+JWT_SECRET=********`
+
+const nginxContent = `server {
     listen 80;
     root /var/www/api/public;
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
-}`,
-    isDirty: false,
-  },
-  {
-    id: 'compose',
-    path: '/var/www/api/docker-compose.yml',
-    language: 'yaml',
-    content: `services:
+}`
+
+const composeContent = `services:
   api:
     image: api:latest
     ports:
       - "3000:3000"
-    restart: unless-stopped`,
+    restart: unless-stopped`
+
+export const mockEditorTabs: EditorTab[] = [
+  {
+    id: 'env',
+    path: '/var/www/api/.env',
+    side: 'remote',
+    serverId: 'mock-server',
+    language: 'ini',
+    content: envContent,
+    savedContent: envContent,
+    isDirty: true,
+    status: 'ready',
+  },
+  {
+    id: 'nginx',
+    path: '/etc/nginx/nginx.conf',
+    side: 'remote',
+    serverId: 'mock-server',
+    language: 'nginx',
+    content: nginxContent,
+    savedContent: nginxContent,
     isDirty: false,
+    status: 'ready',
+  },
+  {
+    id: 'compose',
+    path: '/var/www/api/docker-compose.yml',
+    side: 'remote',
+    serverId: 'mock-server',
+    language: 'yaml',
+    content: composeContent,
+    savedContent: composeContent,
+    isDirty: false,
+    status: 'ready',
   },
 ]
 
 export const mockFileContents: Record<string, { content: string; language: string }> = {
   '/var/www/api/.env': {
     language: 'ini',
-    content: mockEditorTabs[0].content,
+    content: envContent,
   },
   '/etc/nginx/nginx.conf': {
     language: 'nginx',
-    content: mockEditorTabs[1].content,
+    content: nginxContent,
   },
   '/var/www/api/docker-compose.yml': {
     language: 'yaml',
-    content: mockEditorTabs[2].content,
+    content: composeContent,
   },
   '/var/log/app.log': {
     language: 'plaintext',
@@ -72,34 +91,6 @@ PORT=5173`,
   "private": true
 }`,
   },
-}
-
-export function getLanguageForPath(path: string): string {
-  const ext = path.split('.').pop()?.toLowerCase()
-
-  switch (ext) {
-    case 'json':
-      return 'json'
-    case 'yml':
-    case 'yaml':
-      return 'yaml'
-    case 'conf':
-      return 'nginx'
-    case 'env':
-    case 'local':
-      return 'ini'
-    case 'md':
-      return 'markdown'
-    case 'ts':
-    case 'tsx':
-      return 'typescript'
-    case 'js':
-      return 'javascript'
-    case 'log':
-      return 'plaintext'
-    default:
-      return 'plaintext'
-  }
 }
 
 export function getMockFileContent(path: string): { content: string; language: string } {

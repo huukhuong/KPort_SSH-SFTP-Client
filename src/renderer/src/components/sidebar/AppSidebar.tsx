@@ -122,7 +122,7 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
               key={favorite.id}
               label={favorite.label}
               leftSection={<IconFolder size={16} />}
-              onClick={() => actions.navigateRemote(favorite.path)}
+              onClick={() => actions.navigateFavorite(favorite.path)}
             />
           ))}
         </div>

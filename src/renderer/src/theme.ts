@@ -1,4 +1,17 @@
-import { createTheme, NavLink, Tabs, type MantineColorsTuple } from '@mantine/core'
+import {
+  createTheme,
+  NavLink,
+  Notification,
+  Tabs,
+  type MantineColor,
+  type MantineColorsTuple,
+} from '@mantine/core'
+
+function getToastTone(color: MantineColor | undefined): 'success' | 'error' | 'info' {
+  if (color === 'green') return 'success'
+  if (color === 'red') return 'error'
+  return 'info'
+}
 
 /** Generated from https://mantine.dev/colors-generator/?color=4C5897 */
 const bluePalette: MantineColorsTuple = [
@@ -68,6 +81,22 @@ export const theme = createTheme({
             backgroundColor: 'var(--app-hover)',
           },
         },
+      },
+    }),
+    Notification: Notification.extend({
+      defaultProps: {
+        withBorder: true,
+      },
+      styles: (_theme, props) => {
+        const tone = getToastTone(props.color)
+
+        return {
+          root: {
+            backgroundColor: `var(--app-toast-${tone}-bg)`,
+            borderColor: `var(--app-toast-${tone}-border)`,
+            '--notification-color': `var(--app-toast-${tone}-accent)`,
+          },
+        }
       },
     }),
   },

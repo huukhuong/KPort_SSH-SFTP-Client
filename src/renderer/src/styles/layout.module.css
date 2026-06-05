@@ -319,6 +319,22 @@
   border-left: 1px solid var(--app-border);
 }
 
+.explorerPathInput {
+  flex: 1;
+  min-width: 0;
+  margin-left: 4px;
+}
+
+.explorerPathInput input {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.explorerPathOption {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 12px;
+}
+
 .explorerContextMenu {
   min-width: 180px;
   padding: 4px;

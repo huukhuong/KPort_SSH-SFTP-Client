@@ -10,6 +10,10 @@ export const IPC_CHANNELS = {
   SSH_GET_STATUS: 'ssh:getStatus',
   SSH_GET_METRICS: 'ssh:getMetrics',
   SFTP_LIST: 'sftp:list',
+  SFTP_READ_FILE: 'sftp:readFile',
+  SFTP_WRITE_FILE: 'sftp:writeFile',
   FS_GET_PATHS: 'fs:getPaths',
   FS_LIST: 'fs:list',
+  FS_READ_FILE: 'fs:readFile',
+  FS_WRITE_FILE: 'fs:writeFile',
 } as const

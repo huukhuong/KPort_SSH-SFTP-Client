@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { mockLocalFilesystemRoot, mockRemoteFilesystemRoot } from '../mocks/fileTree'
+import { normalizeExplorerPath } from '../utils/fileTree'
 
 interface ExplorerStore {
   localPath: string
@@ -36,8 +37,18 @@ export const useExplorerStore = create<ExplorerStore>((set) => ({
       localPathsReady: true,
     }),
 
-  navigateLocal: (path) => set({ localPath: path, selectedLocalPath: path }),
-  navigateRemote: (path) => set({ remotePath: path, selectedRemotePath: path }),
+  navigateLocal: (path) =>
+    set({
+      localPath: normalizeExplorerPath(path),
+      selectedLocalPath: normalizeExplorerPath(path),
+    }),
+
+  navigateRemote: (path) =>
+    set({
+      remotePath: normalizeExplorerPath(path),
+      selectedRemotePath: normalizeExplorerPath(path),
+    }),
+
   setRemoteHome: (path) => set({ remoteHomePath: path }),
   selectLocal: (path) => set({ selectedLocalPath: path }),
   selectRemote: (path) => set({ selectedRemotePath: path }),

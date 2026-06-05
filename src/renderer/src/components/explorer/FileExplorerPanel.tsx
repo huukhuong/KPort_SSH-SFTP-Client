@@ -1,7 +1,6 @@
 import {
   ActionIcon,
-  Anchor,
-  Breadcrumbs,
+  Autocomplete,
   Center,
   Group,
   Loader,
@@ -10,7 +9,8 @@ import {
   Text,
 } from '@mantine/core'
 import { IconPlugConnected } from '@tabler/icons-react'
-import { IconChevronRight, IconHome, IconRefresh, IconUpload } from '@tabler/icons-react'
+import { IconArrowLeft, IconHome, IconRefresh, IconUpload } from '@tabler/icons-react'
+import { useExplorerPathBar } from '../../hooks/useExplorerPathBar'
 import { useFileExplorer } from '../../hooks/useFileExplorer'
 import type { FileTreeNode } from '../../types/fileTree'
 import { PanelHeader } from '../layout/PanelHeader'
@@ -26,10 +26,13 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
   const {
     title,
     accent,
+    currentPath,
     homePath,
+    serverId,
     atHome,
     atRoot,
-    breadcrumbs,
+    canGoUp,
+    parentPath,
     entries,
     loading,
     listError,
@@ -37,6 +40,16 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
     contextMenu,
     actions,
   } = useFileExplorer(side)
+
+  const pathBarDisabled = side === 'remote' && Boolean(listError)
+  const { pathInputProps, loadingSuggestions } = useExplorerPathBar({
+    currentPath,
+    homePath,
+    isLocal: side === 'local',
+    serverId,
+    disabled: pathBarDisabled,
+    onNavigate: actions.navigate,
+  })
 
   return (
     <div className={classes.explorerPanelBody}>
@@ -56,6 +69,17 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
       />
 
       <Group px="xs" py={6} gap={4} wrap="nowrap" className={classes.explorerPathBar}>
+        <ActionIcon
+          variant="subtle"
+          size="sm"
+          aria-label={parentPath ? `Up to ${parentPath}` : 'Up'}
+          title={parentPath ? `cd .. → ${parentPath}` : 'Already at root'}
+          disabled={!canGoUp || pathBarDisabled}
+          onClick={actions.navigateUp}
+          className={classes.explorerNavButton}
+        >
+          <IconArrowLeft size={14} />
+        </ActionIcon>
         <ActionIcon
           variant="subtle"
           size="sm"
@@ -80,25 +104,20 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
         >
           <IconHome size={14} />
         </ActionIcon>
-        {breadcrumbs.length > 0 && (
-          <Breadcrumbs
-            separator={<IconChevronRight size={12} />}
-            styles={{ breadcrumb: { fontSize: 12 } }}
-            className={classes.explorerBreadcrumbs}
-          >
-            {breadcrumbs.map((segment) => (
-              <Anchor
-                key={segment.path}
-                size="xs"
-                c="dimmed"
-                underline="never"
-                onClick={() => actions.navigate(segment.path)}
-              >
-                {segment.label}
-              </Anchor>
-            ))}
-          </Breadcrumbs>
-        )}
+        <Autocomplete
+          className={classes.explorerPathInput}
+          size="xs"
+          aria-label={`${title} path`}
+          placeholder="Type a path, pick a suggestion"
+          limit={24}
+          rightSection={loadingSuggestions ? <Loader size={14} /> : null}
+          renderOption={({ option }) => (
+            <Text size="xs" className={classes.explorerPathOption}>
+              {option.value}
+            </Text>
+          )}
+          {...pathInputProps}
+        />
       </Group>
 
       <ScrollArea flex={1} type="auto" offsetScrollbars>
