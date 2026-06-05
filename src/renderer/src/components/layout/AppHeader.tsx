@@ -15,7 +15,8 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderProps) {
-  const { serverName, connectionLabel, connectionStatusColor, metrics } = useAppHeader()
+  const { serverName, connectionLabel, connectionStatusColor, isConnected, metrics, metricsLoading } =
+    useAppHeader()
 
   return (
     <Group h="100%" px="md" justify="space-between" wrap="nowrap">
@@ -40,38 +41,70 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
       </Group>
 
       <Group gap="xs" wrap="nowrap">
-        <MetricBadge icon={<IconCpu size={12} />} label="CPU" value={`${metrics.cpuPercent}%`} />
+        <MetricBadge
+          icon={<IconCpu size={12} />}
+          label="CPU"
+          value={formatMetricValue(isConnected, metrics?.cpuPercent, (value) => `${value}%`)}
+          loading={metricsLoading && !metrics}
+        />
         <MetricBadge
           icon={<IconDeviceSdCard size={12} />}
           label="RAM"
-          value={`${metrics.ramUsedGb} / ${metrics.ramTotalGb} GB`}
+          value={formatMetricValue(
+            isConnected,
+            metrics,
+            (value) => `${value.ramUsedGb} / ${value.ramTotalGb} GB`,
+          )}
+          loading={metricsLoading && !metrics}
         />
         <MetricBadge
           icon={<IconDatabase size={12} />}
           label="Disk"
-          value={`${metrics.diskUsedGb} / ${metrics.diskTotalGb} GB`}
+          value={formatMetricValue(
+            isConnected,
+            metrics,
+            (value) => `${value.diskUsedGb} / ${value.diskTotalGb} GB`,
+          )}
+          loading={metricsLoading && !metrics}
         />
-        <MetricBadge icon={<IconActivity size={12} />} label="Load" value={`${metrics.loadAverage}`} />
+        <MetricBadge
+          icon={<IconActivity size={12} />}
+          label="Load"
+          value={formatMetricValue(isConnected, metrics?.loadAverage, (value) => `${value}`)}
+          loading={metricsLoading && !metrics}
+        />
       </Group>
     </Group>
   )
+}
+
+function formatMetricValue<T>(
+  isConnected: boolean,
+  value: T | null | undefined,
+  format: (value: T) => string,
+): string {
+  if (!isConnected) return '—'
+  if (value == null) return '…'
+  return format(value)
 }
 
 function MetricBadge({
   icon,
   label,
   value,
+  loading = false,
 }: {
   icon: React.ReactNode
   label: string
   value: string
+  loading?: boolean
 }) {
   return (
     <Badge
       variant="light"
       color="gray"
       leftSection={icon}
-      styles={{ root: { textTransform: 'none', fontWeight: 500 } }}
+      styles={{ root: { textTransform: 'none', fontWeight: 500, opacity: loading ? 0.7 : 1 } }}
     >
       {label}: {value}
     </Badge>

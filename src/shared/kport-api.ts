@@ -1,4 +1,5 @@
 import type { LocalFileEntry, LocalPathsInfo } from './fs'
+import type { ServerMetrics } from './metrics'
 import type { RemoteFileEntry } from './sftp'
 import type { ServerFormInput, ServerRecord } from './server'
 import type { ConnectionStatus, SshConnectResult, SshTestInput, SshTestResult } from './ssh'
@@ -16,6 +17,7 @@ export interface SshApi {
   disconnect: (serverId: string) => Promise<void>
   test: (input: SshTestInput) => Promise<SshTestResult>
   getStatus: (serverId: string) => Promise<ConnectionStatus>
+  getMetrics: (serverId: string) => Promise<ServerMetrics>
 }
 
 export interface SftpApi {

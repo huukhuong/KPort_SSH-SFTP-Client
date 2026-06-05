@@ -8,6 +8,7 @@ export const IPC_CHANNELS = {
   SSH_DISCONNECT: 'ssh:disconnect',
   SSH_TEST: 'ssh:test',
   SSH_GET_STATUS: 'ssh:getStatus',
+  SSH_GET_METRICS: 'ssh:getMetrics',
   SFTP_LIST: 'sftp:list',
   FS_GET_PATHS: 'fs:getPaths',
   FS_LIST: 'fs:list',

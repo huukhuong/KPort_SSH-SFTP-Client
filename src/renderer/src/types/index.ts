@@ -41,14 +41,7 @@ export interface TransferJob {
   error?: string
 }
 
-export interface ServerMetrics {
-  cpuPercent: number
-  ramUsedGb: number
-  ramTotalGb: number
-  diskUsedGb: number
-  diskTotalGb: number
-  loadAverage: number
-}
+export type { ServerMetrics } from '../../../shared/metrics'
 
 export interface FavoriteDirectory {
   id: string

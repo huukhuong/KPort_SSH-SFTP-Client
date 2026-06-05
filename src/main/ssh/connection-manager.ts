@@ -34,6 +34,15 @@ class ConnectionManager {
     return this.connections.get(serverId)?.homePath ?? null
   }
 
+  async exec(serverId: string, command: string): Promise<string> {
+    const connection = this.connections.get(serverId)
+    if (!connection || connection.status !== 'connected') {
+      throw new Error('Not connected to server')
+    }
+
+    return this.execOnClient(connection.client, command)
+  }
+
   async connect(serverId: string): Promise<{ homePath: string }> {
     const existing = this.connections.get(serverId)
     if (existing?.status === 'connected') {
@@ -132,20 +141,36 @@ class ConnectionManager {
   }
 
   private resolveHomePath(client: Client, username: string): Promise<string> {
-    return new Promise((resolve) => {
-      client.exec('echo $HOME', (error, stream) => {
+    return this.execOnClient(client, 'echo $HOME').then(
+      (home) => home || `/home/${username}`,
+      () => `/home/${username}`,
+    )
+  }
+
+  private execOnClient(client: Client, command: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      client.exec(command, (error, stream) => {
         if (error || !stream) {
-          resolve(`/home/${username}`)
+          reject(error ?? new Error('Failed to execute remote command'))
           return
         }
 
-        let output = ''
+        let stdout = ''
+        let stderr = ''
+
         stream.on('data', (chunk: Buffer | string) => {
-          output += chunk.toString()
+          stdout += chunk.toString()
         })
-        stream.on('close', () => {
-          const home = output.trim()
-          resolve(home || `/home/${username}`)
+        stream.stderr.on('data', (chunk: Buffer | string) => {
+          stderr += chunk.toString()
+        })
+        stream.on('close', (code: number | null) => {
+          if (code !== 0) {
+            reject(new Error(stderr.trim() || `Remote command exited with code ${code}`))
+            return
+          }
+
+          resolve(stdout.trim())
         })
       })
     })

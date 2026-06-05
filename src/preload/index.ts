@@ -18,6 +18,7 @@ const api: KPortApi = {
     disconnect: (serverId: string) => ipcRenderer.invoke(IPC_CHANNELS.SSH_DISCONNECT, serverId),
     test: (input: ServerFormInput) => ipcRenderer.invoke(IPC_CHANNELS.SSH_TEST, input),
     getStatus: (serverId: string) => ipcRenderer.invoke(IPC_CHANNELS.SSH_GET_STATUS, serverId),
+    getMetrics: (serverId: string) => ipcRenderer.invoke(IPC_CHANNELS.SSH_GET_METRICS, serverId),
   },
   sftp: {
     list: (serverId: string, path: string) =>
