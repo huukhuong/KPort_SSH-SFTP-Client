@@ -289,12 +289,22 @@
 .treeRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 4px 8px;
   border-radius: 4px;
   cursor: default;
   font-size: 13px;
   user-select: none;
+}
+
+.treeRowIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  line-height: 0;
 }
 
 .treeRow:hover {

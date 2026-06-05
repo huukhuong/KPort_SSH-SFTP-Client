@@ -1307,6 +1307,11 @@ react-is@^16.13.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
+react-material-icon-theme@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/react-material-icon-theme/-/react-material-icon-theme-1.0.4.tgz#88627a19b4a0f0bdf114c92af8474336c57feffe"
+  integrity sha512-DaBoo+alamdbI9MwW5d1CunJqQck+Q9UzoAlIf0ZQHBX/+JU6XUy7snOBMrr1dEXqisXiu6/tALngsTkiqwnEQ==
+
 react-number-format@^5.4.3:
   version "5.4.5"
   resolved "https://registry.yarnpkg.com/react-number-format/-/react-number-format-5.4.5.tgz#5855f2ae4e4153e6231d3a36b635c38be6824c8a"

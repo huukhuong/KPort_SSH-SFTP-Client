@@ -1,15 +1,5 @@
 import { ActionIcon, Anchor, Breadcrumbs, Group, ScrollArea, Text } from '@mantine/core'
-import {
-  IconChevronRight,
-  IconFile,
-  IconFileCode,
-  IconFileText,
-  IconFolder,
-  IconFolderOpen,
-  IconHome,
-  IconRefresh,
-  IconUpload,
-} from '@tabler/icons-react'
+import { IconChevronRight, IconHome, IconRefresh, IconUpload } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { getRemoteHomePath } from '../../mocks/fileTree'
@@ -32,6 +22,7 @@ import { demoAction } from '../../utils/demoNotify'
 import { useTerminal } from '../../providers/TerminalProvider'
 import { PanelHeader } from '../layout/PanelHeader'
 import { ExplorerContextMenu, type ExplorerContextTarget } from './ExplorerContextMenu'
+import { ExplorerEntryIcon } from './ExplorerEntryIcon'
 import classes from '../../styles/layout.module.css'
 
 interface FileExplorerPanelProps {
@@ -199,17 +190,6 @@ function TreeRow({
   onOpen: () => void
   onContextMenu: (event: React.MouseEvent<HTMLDivElement>) => void
 }) {
-  const icon =
-    node.type === 'directory'
-      ? active
-        ? <IconFolderOpen size={16} />
-        : <IconFolder size={16} />
-      : node.name.endsWith('.json') || node.name.endsWith('.yml')
-        ? <IconFileCode size={16} />
-        : node.name.endsWith('.log')
-          ? <IconFileText size={16} />
-          : <IconFile size={16} />
-
   return (
     <div
       className={[classes.treeRow, active ? classes.treeRowActive : ''].filter(Boolean).join(' ')}
@@ -217,7 +197,7 @@ function TreeRow({
       onDoubleClick={onOpen}
       onContextMenu={onContextMenu}
     >
-      {icon}
+      <ExplorerEntryIcon node={node} active={active} />
       <Text size="sm" span>
         {node.name}
       </Text>
