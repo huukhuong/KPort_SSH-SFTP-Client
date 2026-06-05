@@ -7,8 +7,7 @@ import {
   IconPlugConnected,
   IconServer,
 } from '@tabler/icons-react'
-import { mockMetrics } from '../../mocks/metrics'
-import { useServerStore } from '../../stores/serverStore'
+import { useAppHeader } from '../../hooks/useAppHeader'
 
 interface AppHeaderProps {
   onToggleSidebar?: () => void
@@ -16,10 +15,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderProps) {
-  const servers = useServerStore((state) => state.servers)
-  const activeServerId = useServerStore((state) => state.activeServerId)
-  const activeServer = servers.find((server) => server.id === activeServerId)
-  const isConnected = activeServer?.status === 'connected'
+  const { serverName, connectionLabel, connectionStatusColor, metrics } = useAppHeader()
 
   return (
     <Group h="100%" px="md" justify="space-between" wrap="nowrap">
@@ -32,41 +28,30 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
         </ThemeIcon>
         <div>
           <Text size="sm" fw={600} lh={1.2}>
-            {activeServer?.name ?? 'No server'}
+            {serverName}
           </Text>
           <Group gap={6}>
-            <IconPlugConnected
-              size={12}
-              color={
-                isConnected
-                  ? 'var(--mantine-color-green-5)'
-                  : activeServer?.status === 'connecting'
-                    ? 'var(--mantine-color-yellow-5)'
-                    : 'var(--mantine-color-gray-5)'
-              }
-            />
+            <IconPlugConnected size={12} color={connectionStatusColor} />
             <Text size="xs" c="dimmed">
-              {activeServer
-                ? `${activeServer.username}@${activeServer.host}`
-                : 'Select a server'}
+              {connectionLabel}
             </Text>
           </Group>
         </div>
       </Group>
 
       <Group gap="xs" wrap="nowrap">
-        <MetricBadge icon={<IconCpu size={12} />} label="CPU" value={`${mockMetrics.cpuPercent}%`} />
+        <MetricBadge icon={<IconCpu size={12} />} label="CPU" value={`${metrics.cpuPercent}%`} />
         <MetricBadge
           icon={<IconDeviceSdCard size={12} />}
           label="RAM"
-          value={`${mockMetrics.ramUsedGb} / ${mockMetrics.ramTotalGb} GB`}
+          value={`${metrics.ramUsedGb} / ${metrics.ramTotalGb} GB`}
         />
         <MetricBadge
           icon={<IconDatabase size={12} />}
           label="Disk"
-          value={`${mockMetrics.diskUsedGb} / ${mockMetrics.diskTotalGb} GB`}
+          value={`${metrics.diskUsedGb} / ${metrics.diskTotalGb} GB`}
         />
-        <MetricBadge icon={<IconActivity size={12} />} label="Load" value={`${mockMetrics.loadAverage}`} />
+        <MetricBadge icon={<IconActivity size={12} />} label="Load" value={`${metrics.loadAverage}`} />
       </Group>
     </Group>
   )

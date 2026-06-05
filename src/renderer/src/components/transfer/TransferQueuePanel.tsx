@@ -1,24 +1,12 @@
 import { Group, Progress, ScrollArea, Stack, Text } from '@mantine/core'
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react'
-import { useEffect } from 'react'
-import { useTransferStore } from '../../stores/transferStore'
+import { useTransferQueue } from '../../hooks/useTransferQueue'
 import type { TransferJob } from '../../types'
 import { getFileName } from '../../utils/fileTree'
 import classes from '../../styles/layout.module.css'
 
 export function TransferQueuePanel() {
-  const transfers = useTransferStore((state) => state.transfers)
-  const tickProgress = useTransferStore((state) => state.tickProgress)
-
-  useEffect(() => {
-    const timer = window.setInterval(() => tickProgress(), 700)
-    return () => window.clearInterval(timer)
-  }, [tickProgress])
-
-  const uploading = transfers.filter((job) => job.direction === 'upload' && job.status === 'active')
-  const downloading = transfers.filter((job) => job.direction === 'download' && job.status === 'active')
-  const completed = transfers.filter((job) => job.status === 'completed')
-  const failed = transfers.filter((job) => job.status === 'failed')
+  const { uploading, downloading, completed, failed } = useTransferQueue()
 
   return (
     <ScrollArea h="100%" type="auto" offsetScrollbars>
@@ -77,7 +65,7 @@ function TransferSection({
 }
 
 function TransferItem({ job }: { job: TransferJob }) {
-  const path = job.direction === 'upload' ? job.remotePath : job.remotePath
+  const path = job.remotePath
   const name = getFileName(job.localPath)
   const color = job.status === 'failed' ? 'red' : job.status === 'completed' ? 'green' : 'blue'
 

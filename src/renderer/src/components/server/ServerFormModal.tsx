@@ -9,10 +9,8 @@ import {
   TextInput,
   Textarea,
 } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
-import { useEffect, useState } from 'react'
-import { useServerStore, type ServerFormValues } from '../../stores/serverStore'
-import type { AuthType, Server } from '../../types'
+import { useServerFormModal } from '../../hooks/useServerFormModal'
+import type { Server } from '../../types'
 
 interface ServerFormModalProps {
   opened: boolean
@@ -20,128 +18,38 @@ interface ServerFormModalProps {
   editingServer?: Server | null
 }
 
-const EMPTY_FORM: ServerFormValues = {
-  name: '',
-  host: '',
-  port: 22,
-  username: '',
-  authType: 'password',
-  password: '',
-  privateKey: '',
-}
-
 export function ServerFormModal({ opened, onClose, editingServer = null }: ServerFormModalProps) {
-  const addServer = useServerStore((state) => state.addServer)
-  const updateServer = useServerStore((state) => state.updateServer)
-  const testConnection = useServerStore((state) => state.testConnection)
-  const [form, setForm] = useState<ServerFormValues>(EMPTY_FORM)
-
-  useEffect(() => {
-    if (!opened) return
-
-    if (editingServer) {
-      setForm({
-        name: editingServer.name,
-        host: editingServer.host,
-        port: editingServer.port,
-        username: editingServer.username,
-        authType: editingServer.authType,
-        password: '',
-        privateKey: '',
-      })
-      return
-    }
-
-    setForm(EMPTY_FORM)
-  }, [opened, editingServer])
-
-  const updateField = <K extends keyof ServerFormValues>(key: K, value: ServerFormValues[K]) => {
-    setForm((current) => ({ ...current, [key]: value }))
-  }
-
-  const validate = (): boolean => {
-    if (!form.name.trim() || !form.host.trim() || !form.username.trim()) {
-      notifications.show({
-        title: 'Missing fields',
-        message: 'Name, host, and username are required',
-        color: 'red',
-      })
-      return false
-    }
-
-    return true
-  }
-
-  const handleSave = () => {
-    if (!validate()) return
-
-    if (editingServer) {
-      updateServer(editingServer.id, form)
-      notifications.show({
-        title: 'Server updated',
-        message: editingServer.name,
-        color: 'green',
-      })
-    } else {
-      addServer(form)
-      notifications.show({
-        title: 'Server added',
-        message: form.name,
-        color: 'green',
-      })
-    }
-
-    onClose()
-  }
-
-  const handleTest = async () => {
-    if (!validate()) return
-
-    const ok = await testConnection(form)
-    notifications.show({
-      title: ok ? 'Connection successful' : 'Connection failed',
-      message: ok
-        ? `${form.username}@${form.host}:${form.port}`
-        : 'Check host and credentials',
-      color: ok ? 'green' : 'red',
-    })
-  }
+  const { form, title, actions } = useServerFormModal({ opened, editingServer, onClose })
 
   return (
-    <Modal
-      opened={opened}
-      onClose={onClose}
-      title={editingServer ? 'Edit Server' : 'Add Server'}
-      size="md"
-      centered
-    >
+    <Modal opened={opened} onClose={onClose} title={title} size="md" centered>
       <Stack gap="md">
         <TextInput
           label="Name"
           placeholder="Production"
           value={form.name}
-          onChange={(event) => updateField('name', event.currentTarget.value)}
+          onChange={(event) => actions.updateField('name', event.currentTarget.value)}
         />
         <Group grow>
           <TextInput
             label="Host"
             placeholder="192.168.1.1"
             value={form.host}
-            onChange={(event) => updateField('host', event.currentTarget.value)}
+            onChange={(event) => actions.updateField('host', event.currentTarget.value)}
           />
           <NumberInput
             label="Port"
             min={1}
             max={65535}
             value={form.port}
-            onChange={(value) => updateField('port', Number(value) || 22)}
+            onChange={(value) => actions.updateField('port', Number(value) || 22)}
           />
         </Group>
         <TextInput
           label="Username"
           placeholder="deploy"
           value={form.username}
-          onChange={(event) => updateField('username', event.currentTarget.value)}
+          onChange={(event) => actions.updateField('username', event.currentTarget.value)}
         />
         <SegmentedControl
           fullWidth
@@ -150,14 +58,14 @@ export function ServerFormModal({ opened, onClose, editingServer = null }: Serve
             { label: 'Private Key', value: 'private_key' },
           ]}
           value={form.authType}
-          onChange={(value) => updateField('authType', value as AuthType)}
+          onChange={(value) => actions.setAuthType(value as typeof form.authType)}
         />
         {form.authType === 'password' ? (
           <PasswordInput
             label="Password"
             placeholder="••••••••"
             value={form.password}
-            onChange={(event) => updateField('password', event.currentTarget.value)}
+            onChange={(event) => actions.updateField('password', event.currentTarget.value)}
           />
         ) : (
           <Textarea
@@ -166,17 +74,17 @@ export function ServerFormModal({ opened, onClose, editingServer = null }: Serve
             minRows={3}
             styles={{ input: { fontFamily: 'monospace', fontSize: 12 } }}
             value={form.privateKey}
-            onChange={(event) => updateField('privateKey', event.currentTarget.value)}
+            onChange={(event) => actions.updateField('privateKey', event.currentTarget.value)}
           />
         )}
         <Group justify="flex-end" mt="sm">
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="light" onClick={() => void handleTest()}>
+          <Button variant="light" onClick={() => void actions.test()}>
             Test Connection
           </Button>
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={actions.save}>Save</Button>
         </Group>
       </Stack>
     </Modal>

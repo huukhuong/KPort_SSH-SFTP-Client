@@ -1,0 +1,51 @@
+---
+description: Extract panel logic into custom hooks; keep components thin for mock/demo swaps
+globs: src/renderer/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Component logic → custom hooks
+
+KPort is **UI-first**: components render layout; **hooks own behavior and data wiring** so mock → real IPC is a hook swap, not a component rewrite.
+
+## Rules
+
+1. **Components are presentational** — JSX, styles, event binding only. No store reads, `useEffect` business logic, or derived state inline unless trivial (1–2 lines).
+2. **One panel/feature → one hook** — e.g. `useFileExplorer(side)`, `useServerFormModal()`, `useAppHeader()`. Place in `src/renderer/src/hooks/`.
+3. **Hooks return a stable API** — `{ state, actions }` or named fields the component destructures. Actions are `useCallback`; derived values are `useMemo` inside the hook.
+4. **Stores/services stay behind hooks** — components must not import Zustand stores or `window.kport` directly. Only the hook talks to `stores/`, `mocks/`, or IPC.
+5. **Mock at the hook boundary** — Phase 0 mocks live in stores or hook internals; Phase N replaces hook implementation or injects a provider, not the component tree.
+
+## Examples
+
+```tsx
+// ❌ BAD — logic trapped in component
+export function FileExplorerPanel({ side }: Props) {
+  const currentPath = useExplorerStore((s) => (side === 'local' ? s.localPath : s.remotePath))
+  const entries = listDirectory(filesystemRoot, currentPath)
+  const openNode = (node: FileTreeNode) => { /* ... */ }
+  return (/* jsx */)
+}
+
+// ✅ GOOD — component only renders
+export function FileExplorerPanel({ side }: Props) {
+  const { breadcrumbs, entries, contextMenu, actions } = useFileExplorer(side)
+  return (/* jsx using actions.openNode, actions.navigate, ... */)
+}
+```
+
+```tsx
+// ✅ Hook owns wiring (mock today, IPC tomorrow)
+export function useFileExplorer(side: 'local' | 'remote') {
+  const navigate = useExplorerStore(/* ... */)
+  const entries = useMemo(() => listDirectory(root, currentPath), [currentPath])
+  const openNode = useCallback((node: FileTreeNode) => { /* ... */ }, [deps])
+  return { entries, breadcrumbs, actions: { navigate, openNode, select } }
+}
+```
+
+## When adding a new panel
+
+- Create `use<PanelName>.ts` first (or alongside the component in the same PR).
+- Component file: imports hook + subcomponents only.
+- If logic is shared across panels, extract a smaller hook; do not duplicate store access in components.

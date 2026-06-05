@@ -1,7 +1,7 @@
 import { ActionIcon, Group, Tabs } from '@mantine/core'
 import { IconPlus, IconX } from '@tabler/icons-react'
 import { useEffect } from 'react'
-import { useTerminal } from '../../providers/TerminalProvider'
+import { useTerminalPanel } from '../../hooks/useTerminalPanel'
 import {
   useTerminalSession,
   type TerminalHistoryEntry,
@@ -132,20 +132,12 @@ function TerminalTabLabel({ title, closable, onClose }: TerminalTabLabelProps) {
 }
 
 export function TerminalPanel() {
-  const {
-    tabs,
-    activeTabId,
-    setActiveTabId,
-    addTab,
-    removeTab,
-    sessions,
-    updateSession,
-  } = useTerminal()
+  const { tabs, activeTabId, sessions, actions } = useTerminalPanel()
 
   return (
     <Tabs
       value={activeTabId}
-      onChange={(value) => value && setActiveTabId(value)}
+      onChange={(value) => value && actions.setActiveTabId(value)}
       variant="outline"
       styles={{
         root: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 },
@@ -160,7 +152,7 @@ export function TerminalPanel() {
             <TerminalTabLabel
               title={tab.title}
               closable={tabs.length > 1}
-              onClose={() => removeTab(tab.id)}
+              onClose={() => actions.removeTab(tab.id)}
             />
           </Tabs.Tab>
         ))}
@@ -168,7 +160,7 @@ export function TerminalPanel() {
           variant="subtle"
           size="sm"
           aria-label="New terminal tab"
-          onClick={addTab}
+          onClick={actions.addTab}
           className={classes.terminalTabAdd}
         >
           <IconPlus size={14} />
@@ -186,7 +178,7 @@ export function TerminalPanel() {
             <InteractiveTerminal
               session={session}
               isActive={isActive}
-              onSessionChange={(updater) => updateSession(tab.id, updater)}
+              onSessionChange={(updater) => actions.updateSession(tab.id, updater)}
             />
           </Tabs.Panel>
         )

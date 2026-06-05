@@ -16,12 +16,8 @@ import {
   IconStar,
   IconTerminal2,
 } from '@tabler/icons-react'
-import { mockFavorites } from '../../mocks/favorites'
-import { mockQuickCommands } from '../../mocks/quickCommands'
-import { useExplorerStore } from '../../stores/explorerStore'
-import { useServerStore } from '../../stores/serverStore'
+import { useAppSidebar } from '../../hooks/useAppSidebar'
 import type { Server, ServerStatus } from '../../types'
-import { useTerminal } from '../../providers/TerminalProvider'
 import classes from '../../styles/layout.module.css'
 
 interface AppSidebarProps {
@@ -30,14 +26,7 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
-  const servers = useServerStore((state) => state.servers)
-  const activeServerId = useServerStore((state) => state.activeServerId)
-  const setActiveServer = useServerStore((state) => state.setActiveServer)
-  const toggleFavorite = useServerStore((state) => state.toggleFavorite)
-  const navigateRemote = useExplorerStore((state) => state.navigateRemote)
-  const { injectCommand } = useTerminal()
-
-  const favorites = mockFavorites.filter((item) => item.serverId === activeServerId)
+  const { servers, activeServerId, favorites, quickCommands, actions } = useAppSidebar()
 
   return (
     <Stack gap={0} h="100%">
@@ -75,14 +64,14 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
                     aria-label="Toggle favorite"
                     onClick={(event) => {
                       event.stopPropagation()
-                      toggleFavorite(server.id)
+                      actions.toggleFavorite(server.id)
                     }}
                   >
                     <IconStar size={14} color="var(--mantine-color-yellow-5)" fill="var(--mantine-color-yellow-5)" />
                   </ActionIcon>
                 ) : undefined
               }
-              onClick={() => setActiveServer(server.id)}
+              onClick={() => actions.setActiveServer(server.id)}
               onDoubleClick={() => onEditServer?.(server)}
             />
           ))}
@@ -97,7 +86,7 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
               key={favorite.id}
               label={favorite.label}
               leftSection={<IconFolder size={16} />}
-              onClick={() => navigateRemote(favorite.path)}
+              onClick={() => actions.navigateRemote(favorite.path)}
             />
           ))}
         </div>
@@ -106,14 +95,14 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
           <Text px="sm" py={4} size="xs" fw={700} tt="uppercase" className={classes.sidebarSectionLabel}>
             Quick Commands
           </Text>
-          {mockQuickCommands.map((command) => (
+          {quickCommands.map((command) => (
             <NavLink
               key={command.id}
               label={command.label}
               leftSection={
                 command.group === 'Nginx' ? <IconBolt size={16} /> : <IconTerminal2 size={16} />
               }
-              onClick={() => injectCommand(command.command)}
+              onClick={() => actions.injectCommand(command.command)}
             />
           ))}
         </div>

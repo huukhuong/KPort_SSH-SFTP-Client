@@ -1,10 +1,8 @@
-import { useDisclosure } from '@mantine/hooks'
-import { useState } from 'react'
 import { BOTTOM_HEADER_HEIGHT } from '../../constants/layout'
-import { TerminalProvider } from '../../providers/TerminalProvider'
+import { useServerModal } from '../../hooks/useServerModal'
 import { useSidebarResize } from '../../hooks/useSidebarResize'
 import { useWorkspaceResize } from '../../hooks/useWorkspaceResize'
-import type { Server } from '../../types'
+import { TerminalProvider } from '../../providers/TerminalProvider'
 import { FileExplorerPanel } from '../explorer/FileExplorerPanel'
 import { EditorPanel } from '../editor/EditorPanel'
 import { ServerFormModal } from '../server/ServerFormModal'
@@ -27,25 +25,9 @@ export function AppLayout() {
     startBottomResize,
     toggleBottomPanel,
   } = useWorkspaceResize()
-  const [serverModalOpen, { open: openServerModal, close: closeServerModal }] = useDisclosure(false)
-  const [editingServer, setEditingServer] = useState<Server | null>(null)
+  const { opened: serverModalOpen, editingServer, actions: serverModalActions } = useServerModal()
 
   const localExplorerWidth = `${localExplorerRatio * 100}%`
-
-  const handleAddServer = () => {
-    setEditingServer(null)
-    openServerModal()
-  }
-
-  const handleEditServer = (server: Server) => {
-    setEditingServer(server)
-    openServerModal()
-  }
-
-  const handleCloseServerModal = () => {
-    closeServerModal()
-    setEditingServer(null)
-  }
 
   return (
     <TerminalProvider>
@@ -58,7 +40,10 @@ export function AppLayout() {
           {sidebarOpen && (
             <>
               <aside className={classes.sidebar} style={{ width: sidebarWidth }}>
-                <AppSidebar onAddServer={handleAddServer} onEditServer={handleEditServer} />
+                <AppSidebar
+                  onAddServer={serverModalActions.openAdd}
+                  onEditServer={serverModalActions.openEdit}
+                />
               </aside>
               <div
                 className={classes.sidebarResizeHandle}
@@ -134,7 +119,7 @@ export function AppLayout() {
 
       <ServerFormModal
         opened={serverModalOpen}
-        onClose={handleCloseServerModal}
+        onClose={serverModalActions.close}
         editingServer={editingServer}
       />
     </TerminalProvider>

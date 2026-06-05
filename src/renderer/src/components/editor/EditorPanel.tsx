@@ -1,7 +1,7 @@
 import { ActionIcon, Group, Tabs, Text } from '@mantine/core'
 import Editor from '@monaco-editor/react'
 import { IconX } from '@tabler/icons-react'
-import { getEditorTabLabel, useEditorStore } from '../../stores/editorStore'
+import { useEditorPanel } from '../../hooks/useEditorPanel'
 import { PanelHeader } from '../layout/PanelHeader'
 import classes from '../../styles/layout.module.css'
 
@@ -17,13 +17,7 @@ const MONACO_OPTIONS = {
 }
 
 export function EditorPanel() {
-  const tabs = useEditorStore((state) => state.tabs)
-  const activeTabId = useEditorStore((state) => state.activeTabId)
-  const setActiveTab = useEditorStore((state) => state.setActiveTab)
-  const closeTab = useEditorStore((state) => state.closeTab)
-  const updateContent = useEditorStore((state) => state.updateContent)
-
-  const activeTab = tabs.find((tab) => tab.id === activeTabId) ?? tabs[0]
+  const { tabs, activeTab, getTabLabel, actions } = useEditorPanel()
 
   return (
     <>
@@ -31,7 +25,7 @@ export function EditorPanel() {
 
       <Tabs
         value={activeTab?.id}
-        onChange={(value) => value && setActiveTab(value)}
+        onChange={(value) => value && actions.setActiveTab(value)}
         variant="outline"
         styles={{
           root: { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 },
@@ -44,17 +38,17 @@ export function EditorPanel() {
             <Tabs.Tab key={tab.id} value={tab.id} style={{ paddingInline: 10 }}>
               <Group gap={6} wrap="nowrap">
                 <Text size="xs">
-                  {tab.isDirty ? `${getEditorTabLabel(tab)} *` : getEditorTabLabel(tab)}
+                  {tab.isDirty ? `${getTabLabel(tab)} *` : getTabLabel(tab)}
                 </Text>
                 <ActionIcon
                   component="span"
                   variant="transparent"
                   size="xs"
-                  aria-label={`Close ${getEditorTabLabel(tab)}`}
+                  aria-label={`Close ${getTabLabel(tab)}`}
                   onMouseDown={(event) => event.stopPropagation()}
                   onClick={(event) => {
                     event.stopPropagation()
-                    closeTab(tab.id)
+                    actions.closeTab(tab.id)
                   }}
                 >
                   <IconX size={12} />
@@ -75,7 +69,7 @@ export function EditorPanel() {
                 options={MONACO_OPTIONS}
                 onChange={(value) => {
                   if (value !== undefined) {
-                    updateContent(tab.id, value)
+                    actions.updateContent(tab.id, value)
                   }
                 }}
               />
