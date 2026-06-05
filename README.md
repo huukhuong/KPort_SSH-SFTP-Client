@@ -17,7 +17,7 @@ A cross-platform desktop client for developers who manage remote servers daily. 
 | SSH terminal (xterm) | Done |
 | File transfer queue | UI shell — backend in progress |
 | Favorites & quick commands | UI shell — backend in progress |
-| Installer (`.dmg` / `.exe`) | Not yet — see [Building](#building) |
+| Installer (`.dmg` / `.exe` / `.AppImage`) | CI release on push to `main` |
 
 ## Tech stack
 
@@ -81,7 +81,18 @@ out/
 
 ### Distributable installers
 
-Installer packaging (`electron-builder` → `.dmg`, `.app`, `.exe`) is **not configured yet**. See [docs/PLAN.md](./docs/PLAN.md) for the packaging milestone.
+**CI (recommended):** Every push to `main` triggers [`.github/workflows/release.yml`](./.github/workflows/release.yml) — builds macOS (`.dmg`/`.zip`), Windows (`.exe`), Linux (`.AppImage`/`.deb`) and publishes a GitHub Release (`v{version}.build.{n}`).
+
+**Local packaging:**
+
+```bash
+yarn dist        # current OS
+yarn dist:mac    # macOS only
+yarn dist:win    # Windows only
+yarn dist:linux  # Linux only
+```
+
+Output: `release/`. Requires `resources/icon.{icns,ico,png}` (committed or via `yarn generate:icons`).
 
 ## Project structure
 

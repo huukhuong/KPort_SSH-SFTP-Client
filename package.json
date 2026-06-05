@@ -3,17 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "productName": "KPort",
+  "author": "huukhuong",
   "description": "A cross-platform SSH & SFTP client for developers",
+  "homepage": "https://github.com/huukhuong/KPort_SSH-SFTP-Client",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huukhuong/KPort_SSH-SFTP-Client.git"
+  },
   "main": "./out/main/index.js",
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.js",
     "prepare:electron-shell": "node scripts/prepare-electron-shell.js",
     "build": "electron-vite build",
+    "dist": "yarn build && electron-builder",
+    "dist:mac": "yarn build && electron-builder --mac",
+    "dist:win": "yarn build && electron-builder --win",
+    "dist:linux": "yarn build && electron-builder --linux",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.web.json && tsc --noEmit -p tsconfig.node.json",
     "generate:icons": "node scripts/generate-app-icon.js",
-    "postinstall": "electron-rebuild -f -w better-sqlite3"
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@mantine/core": "^7.17.0",
@@ -39,7 +49,7 @@
     "@types/ssh2": "^1.15.5",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^33.3.1",
-    "electron-rebuild": "^3.2.9",
+    "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.5.3",
