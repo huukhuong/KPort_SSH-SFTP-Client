@@ -19,7 +19,11 @@ interface ServerFormModalProps {
 }
 
 export function ServerFormModal({ opened, onClose, editingServer = null }: ServerFormModalProps) {
-  const { form, title, actions } = useServerFormModal({ opened, editingServer, onClose })
+  const { form, title, saving, testing, actions } = useServerFormModal({
+    opened,
+    editingServer,
+    onClose,
+  })
 
   return (
     <Modal opened={opened} onClose={onClose} title={title} size="md" centered>
@@ -81,10 +85,12 @@ export function ServerFormModal({ opened, onClose, editingServer = null }: Serve
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="light" onClick={() => void actions.test()}>
+          <Button variant="light" loading={testing} onClick={() => void actions.test()}>
             Test Connection
           </Button>
-          <Button onClick={actions.save}>Save</Button>
+          <Button loading={saving} onClick={() => void actions.save()}>
+            Save
+          </Button>
         </Group>
       </Stack>
     </Modal>

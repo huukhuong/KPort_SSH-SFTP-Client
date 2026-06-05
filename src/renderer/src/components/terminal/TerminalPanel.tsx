@@ -1,4 +1,4 @@
-import { ActionIcon, Group, Tabs } from '@mantine/core'
+import { ActionIcon, Group } from '@mantine/core'
 import { IconPlus, IconX } from '@tabler/icons-react'
 import { useEffect } from 'react'
 import { useTerminalPanel } from '../../hooks/useTerminalPanel'
@@ -9,23 +9,6 @@ import {
 } from '../../hooks/useTerminalSession'
 import classes from '../../styles/layout.module.css'
 import { TerminalPromptLine } from './TerminalPromptLine'
-
-const terminalTabStyles = {
-  tab: {
-    color: 'var(--mantine-color-dark-1)',
-    fontSize: 12,
-    fontWeight: 500,
-    '&[data-active]': {
-      color: 'var(--app-terminal-cmd)',
-      borderColor: 'var(--mantine-color-blue-6)',
-      backgroundColor: 'var(--app-active)',
-    },
-    '&:hover:not([data-active])': {
-      color: 'var(--mantine-color-dark-0)',
-      backgroundColor: 'var(--app-hover)',
-    },
-  },
-}
 
 function HistoryLine({ entry, cwd }: { entry: TerminalHistoryEntry; cwd: string }) {
   if (entry.type === 'command') {
@@ -133,28 +116,26 @@ function TerminalTabLabel({ title, closable, onClose }: TerminalTabLabelProps) {
 
 export function TerminalPanel() {
   const { tabs, activeTabId, sessions, actions } = useTerminalPanel()
+  const activeSession = activeTabId ? sessions[activeTabId] : null
 
   return (
-    <Tabs
-      value={activeTabId}
-      onChange={(value) => value && actions.setActiveTabId(value)}
-      variant="outline"
-      styles={{
-        root: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 },
-        panel: { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-        list: { flexShrink: 0 },
-        tab: terminalTabStyles.tab,
-      }}
-    >
-      <Tabs.List className={classes.terminalTabBar}>
+    <div className={classes.terminalPanelRoot}>
+      <div className={classes.terminalTabBar} role="tablist" aria-label="Terminal sessions">
         {tabs.map((tab) => (
-          <Tabs.Tab key={tab.id} value={tab.id}>
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={tab.id === activeTabId}
+            className={`${classes.terminalSessionTab} ${tab.id === activeTabId ? classes.terminalSessionTabActive : ''}`}
+            onClick={() => actions.setActiveTabId(tab.id)}
+          >
             <TerminalTabLabel
               title={tab.title}
               closable={tabs.length > 1}
               onClose={() => actions.removeTab(tab.id)}
             />
-          </Tabs.Tab>
+          </button>
         ))}
         <ActionIcon
           variant="subtle"
@@ -165,24 +146,17 @@ export function TerminalPanel() {
         >
           <IconPlus size={14} />
         </ActionIcon>
-      </Tabs.List>
+      </div>
 
-      {tabs.map((tab) => {
-        const session = sessions[tab.id]
-        if (!session) return null
-
-        const isActive = tab.id === activeTabId
-
-        return (
-          <Tabs.Panel key={tab.id} value={tab.id} className={classes.terminalTabPanel}>
-            <InteractiveTerminal
-              session={session}
-              isActive={isActive}
-              onSessionChange={(updater) => actions.updateSession(tab.id, updater)}
-            />
-          </Tabs.Panel>
-        )
-      })}
-    </Tabs>
+      <div className={classes.terminalTabPanel} role="tabpanel">
+        {activeSession && (
+          <InteractiveTerminal
+            session={activeSession}
+            isActive
+            onSessionChange={(updater) => actions.updateSession(activeTabId!, updater)}
+          />
+        )}
+      </div>
+    </div>
   )
 }

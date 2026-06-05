@@ -1,7 +1,9 @@
 import {
   ActionIcon,
   Button,
+  Center,
   Group,
+  Loader,
   NavLink,
   ScrollArea,
   Stack,
@@ -10,6 +12,7 @@ import {
 } from '@mantine/core'
 import {
   IconBolt,
+  IconEdit,
   IconFolder,
   IconPlus,
   IconServer,
@@ -26,7 +29,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
-  const { servers, activeServerId, favorites, quickCommands, actions } = useAppSidebar()
+  const { servers, activeServerId, loading, error, isEmpty, favorites, quickCommands, actions } =
+    useAppSidebar()
 
   return (
     <Stack gap={0} h="100%">
@@ -49,6 +53,21 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
           <Text px="sm" py={4} size="xs" fw={700} tt="uppercase" className={classes.sidebarSectionLabel}>
             Servers
           </Text>
+          {loading && (
+            <Center py="md">
+              <Loader size="sm" />
+            </Center>
+          )}
+          {!loading && error && (
+            <Text px="sm" py="xs" size="xs" c="red">
+              {error}
+            </Text>
+          )}
+          {!loading && isEmpty && (
+            <Text px="sm" py="xs" size="xs" c="dimmed">
+              No servers yet. Add one to get started.
+            </Text>
+          )}
           {servers.map((server) => (
             <NavLink
               key={server.id}
@@ -57,22 +76,39 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
               leftSection={<StatusDot status={server.status ?? 'disconnected'} />}
               active={server.id === activeServerId}
               rightSection={
-                server.isFavorite ? (
+                <Group gap={2} wrap="nowrap">
                   <ActionIcon
                     variant="transparent"
                     size="xs"
-                    aria-label="Toggle favorite"
+                    aria-label={`Edit ${server.name}`}
                     onClick={(event) => {
                       event.stopPropagation()
-                      actions.toggleFavorite(server.id)
+                      onEditServer?.(server)
                     }}
                   >
-                    <IconStar size={14} color="var(--mantine-color-yellow-5)" fill="var(--mantine-color-yellow-5)" />
+                    <IconEdit size={13} />
                   </ActionIcon>
-                ) : undefined
+                  {server.isFavorite && (
+                    <ActionIcon
+                      variant="transparent"
+                      size="xs"
+                      aria-label="Toggle favorite"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        actions.toggleFavorite(server.id)
+                      }}
+                    >
+                      <IconStar
+                        size={14}
+                        color="var(--mantine-color-yellow-5)"
+                        fill="var(--mantine-color-yellow-5)"
+                      />
+                    </ActionIcon>
+                  )}
+                </Group>
               }
               onClick={() => actions.setActiveServer(server.id)}
-              onDoubleClick={() => onEditServer?.(server)}
+              onDoubleClick={() => void actions.connectToServer(server.id)}
             />
           ))}
         </div>

@@ -1,120 +1,153 @@
+import type { ServerFormInput } from '../../../shared/server'
 import { create } from 'zustand'
-import { mockServers } from '../mocks/servers'
-import type { AuthType, Server, ServerStatus } from '../types'
+import { useExplorerStore } from './explorerStore'
+import {
+  createServer,
+  listServers,
+  toggleServerFavorite,
+  updateServer,
+} from '../services/servers'
+import { connectServer, disconnectServer, testConnection as testSshConnection } from '../services/ssh'
+import type { Server, ServerStatus } from '../types'
 
-export interface ServerFormValues {
-  name: string
-  host: string
-  port: number
-  username: string
-  authType: AuthType
-  password?: string
-  privateKey?: string
-}
+export type ServerFormValues = ServerFormInput
 
 interface ServerStore {
   servers: Server[]
   activeServerId: string | null
+  loading: boolean
+  initialized: boolean
+  error: string | null
+  initialize: () => Promise<void>
   setActiveServer: (id: string) => void
+  connectToServer: (id: string) => Promise<void>
   connectServer: (id: string) => Promise<void>
-  disconnectServer: (id: string) => void
-  toggleFavorite: (id: string) => void
-  addServer: (values: ServerFormValues) => void
-  updateServer: (id: string, values: ServerFormValues) => void
+  disconnectServer: (id: string) => Promise<void>
+  toggleFavorite: (id: string) => Promise<void>
+  addServer: (values: ServerFormValues) => Promise<void>
+  updateServer: (id: string, values: ServerFormValues) => Promise<void>
   testConnection: (values: ServerFormValues) => Promise<boolean>
 }
 
-let nextServerId = 100
-
-function createServerFromForm(values: ServerFormValues): Server {
-  return {
-    id: String(nextServerId++),
-    name: values.name.trim(),
-    host: values.host.trim(),
-    port: values.port,
-    username: values.username.trim(),
-    authType: values.authType,
-    isFavorite: false,
-    status: 'disconnected',
-  }
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+function patchServerStatus(servers: Server[], id: string, status: ServerStatus): Server[] {
+  return servers.map((server) => (server.id === id ? { ...server, status } : server))
 }
 
 export const useServerStore = create<ServerStore>((set, get) => ({
-  servers: mockServers,
-  activeServerId: mockServers[0]?.id ?? null,
+  servers: [],
+  activeServerId: null,
+  loading: false,
+  initialized: false,
+  error: null,
 
-  setActiveServer: (id) => {
-    set({ activeServerId: id })
-    const server = get().servers.find((item) => item.id === id)
-    if (server?.status === 'disconnected') {
-      void get().connectServer(id)
+  initialize: async () => {
+    if (get().initialized || get().loading) return
+
+    set({ loading: true, error: null })
+
+    try {
+      const servers = await listServers()
+
+      set({
+        servers,
+        activeServerId: null,
+        loading: false,
+        initialized: true,
+        error: null,
+      })
+    } catch (error) {
+      set({
+        servers: [],
+        activeServerId: null,
+        loading: false,
+        initialized: true,
+        error: error instanceof Error ? error.message : 'Failed to load servers',
+      })
     }
   },
 
+  setActiveServer: (id) => {
+    set({ activeServerId: id })
+  },
+
+  connectToServer: async (id) => {
+    set({ activeServerId: id })
+    await get().connectServer(id)
+  },
+
   connectServer: async (id) => {
+    const current = get().servers.find((server) => server.id === id)
+    if (!current || current.status === 'connecting' || current.status === 'connected') {
+      return
+    }
+
     set((state) => ({
-      servers: state.servers.map((server) =>
-        server.id === id ? { ...server, status: 'connecting' as ServerStatus } : server,
-      ),
+      servers: patchServerStatus(state.servers, id, 'connecting'),
     }))
 
-    await delay(1200)
+    try {
+      const result = await connectServer(id)
+      set((state) => ({
+        servers: patchServerStatus(state.servers, id, 'connected'),
+      }))
+      const explorer = useExplorerStore.getState()
+      explorer.setRemoteHome(result.homePath)
+      explorer.navigateRemote(result.homePath)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Connection failed'
+      set((state) => ({
+        servers: patchServerStatus(state.servers, id, 'error'),
+      }))
+      throw new Error(message)
+    }
+  },
 
+  disconnectServer: async (id) => {
+    await disconnectServer(id)
+    set((state) => ({
+      servers: patchServerStatus(state.servers, id, 'disconnected'),
+    }))
+  },
+
+  toggleFavorite: async (id) => {
+    const updated = await toggleServerFavorite(id)
     set((state) => ({
       servers: state.servers.map((server) =>
-        server.id === id ? { ...server, status: 'connected' as ServerStatus } : server,
+        server.id === id ? { ...updated, status: server.status } : server,
       ),
     }))
   },
 
-  disconnectServer: (id) => {
-    set((state) => ({
-      servers: state.servers.map((server) =>
-        server.id === id ? { ...server, status: 'disconnected' as ServerStatus } : server,
-      ),
-    }))
-  },
-
-  toggleFavorite: (id) => {
-    set((state) => ({
-      servers: state.servers.map((server) =>
-        server.id === id ? { ...server, isFavorite: !server.isFavorite } : server,
-      ),
-    }))
-  },
-
-  addServer: (values) => {
-    const server = createServerFromForm(values)
+  addServer: async (values) => {
+    const server = await createServer(values)
     set((state) => ({
       servers: [...state.servers, server],
       activeServerId: server.id,
     }))
-    void get().connectServer(server.id)
   },
 
-  updateServer: (id, values) => {
+  updateServer: async (id, values) => {
+    const previousStatus = get().servers.find((server) => server.id === id)?.status
+    const server = await updateServer(id, values)
+
     set((state) => ({
-      servers: state.servers.map((server) =>
-        server.id === id
-          ? {
-              ...server,
-              name: values.name.trim(),
-              host: values.host.trim(),
-              port: values.port,
-              username: values.username.trim(),
-              authType: values.authType,
-            }
-          : server,
+      servers: state.servers.map((item) =>
+        item.id === id
+          ? { ...server, status: previousStatus === 'connected' ? 'disconnected' : item.status }
+          : item,
       ),
     }))
+
+    if (previousStatus === 'connected') {
+      await get().disconnectServer(id)
+    }
   },
 
   testConnection: async (values) => {
-    await delay(900)
-    return Boolean(values.host.trim() && values.username.trim())
+    const result = await testSshConnection(values)
+    if (!result.ok && result.error) {
+      throw new Error(result.error)
+    }
+    return result.ok
   },
 }))

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { getMockFileContent, mockEditorTabs } from '../mocks/editorFiles'
+import { getMockFileContent } from '../mocks/editorFiles'
 import { getFileName } from '../utils/fileTree'
 import type { EditorTab } from '../types'
 
@@ -17,8 +17,8 @@ function createTabId(path: string): string {
 }
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
-  tabs: mockEditorTabs,
-  activeTabId: mockEditorTabs[0]?.id ?? null,
+  tabs: [],
+  activeTabId: null,
 
   openFile: (path) => {
     const existing = get().tabs.find((tab) => tab.path === path)
@@ -44,15 +44,13 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   closeTab: (id) => {
     set((state) => {
-      if (state.tabs.length <= 1) return state
-
       const index = state.tabs.findIndex((tab) => tab.id === id)
       if (index === -1) return state
 
       const nextTabs = state.tabs.filter((tab) => tab.id !== id)
       const nextActive =
         state.activeTabId === id
-          ? nextTabs[Math.min(index, nextTabs.length - 1)]?.id ?? null
+          ? (nextTabs[Math.min(index, nextTabs.length - 1)]?.id ?? null)
           : state.activeTabId
 
       return { tabs: nextTabs, activeTabId: nextActive }

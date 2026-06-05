@@ -1,6 +1,8 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, screen } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
+import { closeDatabase, getDatabase } from './db/index'
+import { registerIpcHandlers } from './ipc/register'
 
 function resolvePreloadPath(): string {
   const candidates = [
@@ -19,10 +21,13 @@ function resolvePreloadPath(): string {
 function createWindow(): void {
   const isDev = Boolean(process.env.ELECTRON_RENDERER_URL)
   const preloadPath = resolvePreloadPath()
+  const { workArea } = screen.getPrimaryDisplay()
 
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
+    x: workArea.x,
+    y: workArea.y,
+    width: workArea.width,
+    height: workArea.height,
     minWidth: 960,
     minHeight: 640,
     show: false,
@@ -41,6 +46,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
+    mainWindow.maximize()
     mainWindow.show()
   })
 
@@ -52,6 +58,8 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  getDatabase()
+  registerIpcHandlers()
   createWindow()
 
   app.on('activate', () => {
@@ -65,4 +73,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('will-quit', () => {
+  closeDatabase()
 })

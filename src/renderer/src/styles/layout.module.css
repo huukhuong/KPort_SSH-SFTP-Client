@@ -61,6 +61,8 @@
 }
 
 .mainArea {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
   min-height: 0;
@@ -72,10 +74,26 @@
 .workspaceColumn {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
   gap: 4px;
+}
+
+.workspaceColumnTerminalFill {
+  display: grid;
+  row-gap: 4px;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.workspaceColumnTerminalFill > .explorersRow {
+  grid-row: 1;
+  min-height: 0;
+}
+
+.workspaceColumnTerminalFill > .resizeHandleRow {
+  grid-row: 2;
 }
 
 .explorersRow {
@@ -84,6 +102,11 @@
   min-height: 140px;
   overflow: hidden;
   gap: 4px;
+}
+
+.explorersRowExpanded {
+  flex: 1;
+  min-height: 0;
 }
 
 .explorerPane {
@@ -177,26 +200,75 @@
 .bottomArea {
   flex: 0 0 auto;
   min-height: 36px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: var(--app-surface-terminal);
   border: 1px solid var(--app-border-strong);
   border-radius: 6px;
 }
 
+.bottomAreaGrow {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.bottomAreaGridCell {
+  min-height: 0;
+  grid-row: 3;
+}
+
 .bottomPanel {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
   height: 100%;
   overflow: hidden;
 }
 
-.panelHeader {
+.bottomPanelCollapsed {
   flex: 0 0 auto;
+}
+
+.bottomTabBar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bottomTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mantine-color-dark-1);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.bottomTab:hover {
+  background: var(--app-hover);
+  color: var(--mantine-color-dark-0);
+}
+
+.bottomTabActive {
+  background: var(--app-active);
+  color: var(--app-terminal-cmd);
+}
+
+.panelHeader {
+  flex: 0 0 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 10px;
-  height: 36px;
+  min-height: 36px;
   border-bottom: 1px solid var(--app-border-strong);
   background: var(--app-surface-header);
 }
@@ -281,7 +353,15 @@
 }
 
 .panelBody {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.transferPanelRoot {
+  flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
 }
@@ -363,18 +443,50 @@
   background: var(--app-surface-editor-code);
 }
 
-.terminalTabPanel {
-  flex: 1;
+.terminalPanelRoot {
+  flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.terminalBody {
-  flex: 1;
+.terminalSessionTab {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mantine-color-dark-1);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.terminalSessionTab:hover {
+  background: var(--app-hover);
+  color: var(--mantine-color-dark-0);
+}
+
+.terminalSessionTabActive {
+  color: var(--app-terminal-cmd);
+  background: var(--app-active);
+}
+
+.terminalTabPanel {
+  flex: 1 1 0;
   min-height: 0;
-  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: var(--mantine-color-dark-9);
+}
+
+.terminalBody {
+  position: absolute;
+  inset: 0;
   padding: 8px 12px;
   overflow-x: hidden;
   overflow-y: auto;

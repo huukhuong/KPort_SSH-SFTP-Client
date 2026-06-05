@@ -28,6 +28,8 @@ export function useServerFormModal({
   const updateServer = useServerStore((state) => state.updateServer)
   const testConnection = useServerStore((state) => state.testConnection)
   const [form, setForm] = useState<ServerFormValues>(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
 
   useEffect(() => {
     if (!opened) return
@@ -72,45 +74,69 @@ export function useServerFormModal({
     return true
   }, [form.host, form.name, form.username])
 
-  const save = useCallback(() => {
-    if (!validate()) return
+  const save = useCallback(async () => {
+    if (!validate() || saving) return
 
-    if (editingServer) {
-      updateServer(editingServer.id, form)
+    setSaving(true)
+    try {
+      if (editingServer) {
+        await updateServer(editingServer.id, form)
+        notifications.show({
+          title: 'Server updated',
+          message: editingServer.name,
+          color: 'green',
+        })
+      } else {
+        await addServer(form)
+        notifications.show({
+          title: 'Server added',
+          message: form.name,
+          color: 'green',
+        })
+      }
+
+      onClose()
+    } catch (err) {
       notifications.show({
-        title: 'Server updated',
-        message: editingServer.name,
-        color: 'green',
+        title: 'Save failed',
+        message: err instanceof Error ? err.message : 'Could not save server',
+        color: 'red',
       })
-    } else {
-      addServer(form)
-      notifications.show({
-        title: 'Server added',
-        message: form.name,
-        color: 'green',
-      })
+    } finally {
+      setSaving(false)
     }
-
-    onClose()
-  }, [addServer, editingServer, form, onClose, updateServer, validate])
+  }, [addServer, editingServer, form, onClose, saving, updateServer, validate])
 
   const test = useCallback(async () => {
-    if (!validate()) return
+    if (!validate() || testing) return
 
-    const ok = await testConnection(form)
-    notifications.show({
-      title: ok ? 'Connection successful' : 'Connection failed',
-      message: ok
-        ? `${form.username}@${form.host}:${form.port}`
-        : 'Check host and credentials',
-      color: ok ? 'green' : 'red',
-    })
-  }, [form, testConnection, validate])
+    setTesting(true)
+    try {
+      const ok = await testConnection(form)
+      notifications.show({
+        title: ok ? 'Connection successful' : 'Connection failed',
+        message: ok
+          ? `${form.username}@${form.host}:${form.port}`
+          : 'Check host and credentials',
+        color: ok ? 'green' : 'red',
+      })
+    } catch (err) {
+      notifications.show({
+        title: 'Connection failed',
+        message: err instanceof Error ? err.message : 'Could not reach server',
+        color: 'red',
+      })
+    } finally {
+      setTesting(false)
+    }
+  }, [form, testConnection, testing, validate])
 
   return {
     form,
     isEditing: Boolean(editingServer),
     title: editingServer ? 'Edit Server' : 'Add Server',
+    saving,
+    testing,
     actions: {
       updateField,
       setAuthType,

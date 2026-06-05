@@ -9,11 +9,14 @@ import {
   LOCAL_EXPLORER_RATIO_DEFAULT,
   LOCAL_EXPLORER_RATIO_MAX,
   LOCAL_EXPLORER_RATIO_MIN,
+  TERMINAL_SPLIT_RATIO_DEFAULT,
   WORKSPACE_LAYOUT_DEFAULT,
   WORKSPACE_STORAGE_KEY,
+  clampTerminalSplitRatio,
   clampWorkspaceLayout,
   getMaxBottomHeight,
   getMaxExplorersHeight,
+  getTerminalSplitSplittableHeight,
   getWorkspaceContentHeight,
   type WorkspaceLayout,
 } from '../constants/layout'
@@ -47,6 +50,11 @@ function readStoredLayout(): WorkspaceLayout {
         Number(parsed.localExplorerRatio) || LOCAL_EXPLORER_RATIO_DEFAULT,
         LOCAL_EXPLORER_RATIO_MIN,
         LOCAL_EXPLORER_RATIO_MAX,
+      ),
+      terminalSplitRatio: clamp(
+        Number(parsed.terminalSplitRatio) || TERMINAL_SPLIT_RATIO_DEFAULT,
+        0,
+        1,
       ),
       bottomCollapsed: Boolean(parsed.bottomCollapsed),
     }
@@ -99,8 +107,7 @@ export function useWorkspaceResize() {
     if (!column) return
 
     const syncLayout = () => {
-      const contentHeight = getWorkspaceContentHeight(column.clientHeight)
-      setLayout((current) => clampWorkspaceLayout(current, contentHeight))
+      setLayout((current) => clampWorkspaceLayout(current, column.clientHeight))
     }
 
     syncLayout()
@@ -158,6 +165,28 @@ export function useWorkspaceResize() {
     [layout.explorersHeight, startDragRow],
   )
 
+  const startTerminalSplitResize = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const column = workspaceColumnRef.current
+      if (!column) return
+
+      const rect = column.getBoundingClientRect()
+
+      startDragRow((moveEvent) => {
+        const splittable = getTerminalSplitSplittableHeight(column.clientHeight)
+        if (splittable <= 0) return
+
+        const nextRatio = (moveEvent.clientY - rect.top) / splittable
+
+        setLayout((current) => ({
+          ...current,
+          terminalSplitRatio: clampTerminalSplitRatio(nextRatio, column.clientHeight),
+        }))
+      })(event)
+    },
+    [startDragRow],
+  )
+
   const startBottomResize = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const startY = event.clientY
@@ -199,8 +228,10 @@ export function useWorkspaceResize() {
     bottomHeight: layout.bottomHeight,
     localExplorerRatio: layout.localExplorerRatio,
     bottomCollapsed: layout.bottomCollapsed,
+    terminalSplitRatio: layout.terminalSplitRatio,
     startLocalResize,
     startExplorersResize,
+    startTerminalSplitResize,
     startBottomResize,
     toggleBottomPanel,
   }

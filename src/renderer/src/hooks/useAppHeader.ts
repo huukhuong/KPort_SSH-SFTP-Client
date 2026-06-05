@@ -18,12 +18,16 @@ export function useAppHeader() {
     [servers, activeServerId],
   )
 
-  const connectionLabel = activeServer
-    ? `${activeServer.username}@${activeServer.host}`
-    : 'Select a server'
+  const connectionLabel = !activeServer
+    ? 'Select a server'
+    : activeServer.status === 'connected'
+      ? `${activeServer.username}@${activeServer.host}`
+      : activeServer.status === 'connecting'
+        ? 'Connecting...'
+        : 'Double-click server to connect'
 
   return {
-    serverName: activeServer?.name ?? 'No server',
+    serverName: activeServer?.name ?? 'No server selected',
     connectionLabel,
     connectionStatusColor: getConnectionStatusColor(activeServer?.status),
     isConnected: activeServer?.status === 'connected',

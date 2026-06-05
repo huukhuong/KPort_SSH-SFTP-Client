@@ -1,5 +1,38 @@
+import type { LocalFileEntry, LocalPathsInfo } from './fs'
+import type { RemoteFileEntry } from './sftp'
+import type { ServerFormInput, ServerRecord } from './server'
+import type { ConnectionStatus, SshConnectResult, SshTestInput, SshTestResult } from './ssh'
+
+export interface ServersApi {
+  list: () => Promise<ServerRecord[]>
+  create: (input: ServerFormInput) => Promise<ServerRecord>
+  update: (id: string, input: ServerFormInput) => Promise<ServerRecord>
+  delete: (id: string) => Promise<void>
+  toggleFavorite: (id: string) => Promise<ServerRecord>
+}
+
+export interface SshApi {
+  connect: (serverId: string) => Promise<SshConnectResult>
+  disconnect: (serverId: string) => Promise<void>
+  test: (input: SshTestInput) => Promise<SshTestResult>
+  getStatus: (serverId: string) => Promise<ConnectionStatus>
+}
+
+export interface SftpApi {
+  list: (serverId: string, path: string) => Promise<RemoteFileEntry[]>
+}
+
+export interface FsApi {
+  getPaths: () => Promise<LocalPathsInfo>
+  list: (path: string) => Promise<LocalFileEntry[]>
+}
+
 export interface KPortApi {
   ping: () => Promise<string>
+  servers: ServersApi
+  ssh: SshApi
+  sftp: SftpApi
+  fs: FsApi
 }
 
 declare global {

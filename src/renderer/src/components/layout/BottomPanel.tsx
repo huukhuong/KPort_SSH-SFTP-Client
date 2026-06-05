@@ -1,8 +1,11 @@
-import { ActionIcon, Group, Tabs } from '@mantine/core'
+import { ActionIcon } from '@mantine/core'
 import { IconChevronDown, IconChevronUp, IconList, IconTerminal2 } from '@tabler/icons-react'
+import { useState } from 'react'
 import { TerminalPanel } from '../terminal/TerminalPanel'
 import { TransferQueuePanel } from '../transfer/TransferQueuePanel'
 import classes from '../../styles/layout.module.css'
+
+type BottomTab = 'terminal' | 'transfers'
 
 interface BottomPanelProps {
   onToggle: () => void
@@ -10,54 +13,52 @@ interface BottomPanelProps {
 }
 
 export function BottomPanel({ onToggle, collapsed = false }: BottomPanelProps) {
+  const [activeTab, setActiveTab] = useState<BottomTab>('terminal')
+
   return (
-    <div className={classes.bottomPanel}>
-      <Tabs
-        defaultValue="terminal"
-        variant="unstyled"
-        styles={{
-          root: { display: 'flex', flexDirection: 'column', height: '100%' },
-          panel: { flex: 1, minHeight: 0 },
-        }}
-      >
-        <Group
-          className={`${classes.panelHeader} ${classes.panelHeaderAccentTerminal}`}
-          justify="space-between"
-          wrap="nowrap"
-        >
-          <Tabs.List style={{ gap: 4, border: 'none' }}>
-            <Tabs.Tab
-              value="terminal"
-              leftSection={<IconTerminal2 size={14} />}
-              style={{ height: 28, paddingInline: 10, borderRadius: 6 }}
-            >
-              Terminal
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="transfers"
-              leftSection={<IconList size={14} />}
-              style={{ height: 28, paddingInline: 10, borderRadius: 6 }}
-            >
-              Transfers
-            </Tabs.Tab>
-          </Tabs.List>
+    <div
+      className={`${classes.bottomPanel} ${collapsed ? classes.bottomPanelCollapsed : ''}`}
+    >
+      <div className={`${classes.panelHeader} ${classes.panelHeaderAccentTerminal}`}>
+        <div className={classes.bottomTabBar} role="tablist" aria-label="Bottom panel">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'terminal'}
+            className={`${classes.bottomTab} ${activeTab === 'terminal' ? classes.bottomTabActive : ''}`}
+            onClick={() => setActiveTab('terminal')}
+          >
+            <IconTerminal2 size={14} />
+            Terminal
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'transfers'}
+            className={`${classes.bottomTab} ${activeTab === 'transfers' ? classes.bottomTabActive : ''}`}
+            onClick={() => setActiveTab('transfers')}
+          >
+            <IconList size={14} />
+            Transfers
+          </button>
+        </div>
 
-          <ActionIcon variant="subtle" size="sm" onClick={onToggle} aria-label="Toggle panel">
-            {collapsed ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
-          </ActionIcon>
-        </Group>
+        <ActionIcon variant="subtle" size="sm" onClick={onToggle} aria-label="Toggle panel">
+          {collapsed ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
+        </ActionIcon>
+      </div>
 
-        {!collapsed && (
-          <>
-            <Tabs.Panel value="terminal" className={classes.panelBody}>
-              <TerminalPanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="transfers" className={classes.panelBody}>
+      {!collapsed && (
+        <div className={classes.panelBody}>
+          {activeTab === 'terminal' ? (
+            <TerminalPanel />
+          ) : (
+            <div className={classes.transferPanelRoot}>
               <TransferQueuePanel />
-            </Tabs.Panel>
-          </>
-        )}
-      </Tabs>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -9,12 +9,13 @@ export function useEditorPanel() {
   const updateContent = useEditorStore((state) => state.updateContent)
 
   const activeTab = useMemo(
-    () => tabs.find((tab) => tab.id === activeTabId) ?? tabs[0],
+    () => tabs.find((tab) => tab.id === activeTabId) ?? null,
     [tabs, activeTabId],
   )
 
   return {
     tabs,
+    hasTabs: tabs.length > 0,
     activeTab,
     getTabLabel: getEditorTabLabel,
     actions: {

@@ -1,4 +1,15 @@
-import { ActionIcon, Anchor, Breadcrumbs, Group, ScrollArea, Text } from '@mantine/core'
+import {
+  ActionIcon,
+  Anchor,
+  Breadcrumbs,
+  Center,
+  Group,
+  Loader,
+  ScrollArea,
+  Stack,
+  Text,
+} from '@mantine/core'
+import { IconPlugConnected } from '@tabler/icons-react'
 import { IconChevronRight, IconHome, IconRefresh, IconUpload } from '@tabler/icons-react'
 import { useFileExplorer } from '../../hooks/useFileExplorer'
 import type { FileTreeNode } from '../../types/fileTree'
@@ -20,6 +31,8 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
     atRoot,
     breadcrumbs,
     entries,
+    loading,
+    listError,
     selectedPath,
     contextMenu,
     actions,
@@ -89,7 +102,32 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
       </Group>
 
       <ScrollArea flex={1} type="auto" offsetScrollbars>
-        {entries.map((entry) => (
+        {loading && (
+          <Center py="lg">
+            <Loader size="sm" />
+          </Center>
+        )}
+        {!loading && listError && (
+          <Center py="xl" px="md" style={{ minHeight: 120 }}>
+            <Stack gap="xs" align="center" maw={280}>
+              {side === 'remote' && (
+                <IconPlugConnected size={28} color="var(--mantine-color-gray-6)" stroke={1.5} />
+              )}
+              <Text size="sm" c="dimmed" ta="center">
+                {listError}
+              </Text>
+            </Stack>
+          </Center>
+        )}
+        {!loading &&
+          !listError &&
+          entries.length === 0 && (
+            <Text px="sm" py="md" size="sm" c="dimmed">
+              Empty directory
+            </Text>
+          )}
+        {!loading &&
+          entries.map((entry) => (
           <TreeRow
             key={entry.path}
             node={entry}
@@ -98,7 +136,7 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
             onOpen={() => actions.openNode(entry)}
             onContextMenu={(event) => actions.openContextMenu(entry, event)}
           />
-        ))}
+          ))}
       </ScrollArea>
 
       <ExplorerContextMenu
