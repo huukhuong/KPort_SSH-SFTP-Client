@@ -1,0 +1,29 @@
+import type { TransferJob } from '../types'
+
+export const mockTransfers: TransferJob[] = [
+  {
+    id: 't1',
+    direction: 'upload',
+    localPath: '/Users/dev/deploy.zip',
+    remotePath: '/var/www/api/deploy.zip',
+    status: 'active',
+    progress: 62,
+  },
+  {
+    id: 't2',
+    direction: 'download',
+    localPath: '/Users/dev/logs/app.log',
+    remotePath: '/var/log/app.log',
+    status: 'completed',
+    progress: 100,
+  },
+  {
+    id: 't3',
+    direction: 'upload',
+    localPath: '/Users/dev/config.yml',
+    remotePath: '/etc/app/config.yml',
+    status: 'failed',
+    progress: 18,
+    error: 'Permission denied',
+  },
+]
