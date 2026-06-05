@@ -101,12 +101,7 @@ export function ExplorerContextMenu({
           <div className={classes.contextMenuDivider} />
           <ContextItem
             label="Open Terminal Here"
-            onClick={() =>
-              run('Open Terminal Here', () => {
-                onOpenTerminalHere(node.path)
-                demoAction('Open Terminal Here', `New tab → cd ${node.path}`)
-              })
-            }
+            onClick={() => run('Open Terminal Here', () => onOpenTerminalHere(node.path))}
           />
         </>
       )}

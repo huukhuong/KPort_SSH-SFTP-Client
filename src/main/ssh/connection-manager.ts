@@ -36,6 +36,15 @@ class ConnectionManager {
     return this.connections.get(serverId)?.homePath ?? null
   }
 
+  getClient(serverId: string): Client {
+    const connection = this.connections.get(serverId)
+    if (!connection || connection.status !== 'connected') {
+      throw new Error('Not connected to server')
+    }
+
+    return connection.client
+  }
+
   async exec(serverId: string, command: string): Promise<string> {
     const connection = this.connections.get(serverId)
     if (!connection || connection.status !== 'connected') {

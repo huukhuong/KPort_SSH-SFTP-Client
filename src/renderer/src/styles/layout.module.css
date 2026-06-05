@@ -500,6 +500,56 @@
   background: var(--mantine-color-dark-9);
 }
 
+.terminalTabPane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminalTabPaneHidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.xtermHost {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  background: var(--app-surface-terminal);
+}
+
+.xtermSurface {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.xtermSurface :global(.xterm) {
+  height: 100%;
+}
+
+.xtermSurface :global(.xterm-viewport) {
+  overflow-y: auto;
+}
+
+.terminalPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 16px;
+  text-align: center;
+}
+
+.terminalStatusOverlay {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  pointer-events: none;
+}
+
 .terminalBody {
   position: absolute;
   inset: 0;

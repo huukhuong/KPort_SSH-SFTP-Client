@@ -3,6 +3,13 @@ import type { ServerMetrics } from './metrics'
 import type { RemoteFileEntry } from './sftp'
 import type { ServerFormInput, ServerRecord } from './server'
 import type { ConnectionStatus, SshConnectResult, SshTestInput, SshTestResult } from './ssh'
+import type {
+  TerminalCreateInput,
+  TerminalCreateResult,
+  TerminalDataEvent,
+  TerminalExitEvent,
+  TerminalResizeInput,
+} from './terminal'
 
 export interface ServersApi {
   list: () => Promise<ServerRecord[]>
@@ -33,12 +40,22 @@ export interface FsApi {
   writeFile: (path: string, content: string) => Promise<void>
 }
 
+export interface TerminalApi {
+  create: (input: TerminalCreateInput) => Promise<TerminalCreateResult>
+  write: (terminalId: string, data: string) => Promise<void>
+  resize: (input: TerminalResizeInput) => Promise<void>
+  destroy: (terminalId: string) => Promise<void>
+  onData: (callback: (event: TerminalDataEvent) => void) => () => void
+  onExit: (callback: (event: TerminalExitEvent) => void) => () => void
+}
+
 export interface KPortApi {
   ping: () => Promise<string>
   servers: ServersApi
   ssh: SshApi
   sftp: SftpApi
   fs: FsApi
+  terminal: TerminalApi
 }
 
 declare global {

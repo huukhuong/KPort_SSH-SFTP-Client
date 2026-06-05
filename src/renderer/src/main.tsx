@@ -1,5 +1,6 @@
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
+import '@xterm/xterm/css/xterm.css'
 import './styles/variables.css'
 import './styles/global.css'
 

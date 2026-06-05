@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import { IPC_CHANNELS } from '../../shared/ipc-channels'
 import type { ServerFormInput } from '../../shared/server'
 import { connectionManager } from '../ssh/connection-manager'
+import { terminalManager } from '../ssh/terminal-manager'
 import { mapSshError } from '../ssh/errors'
 
 function wrapHandler<T>(handler: () => Promise<T> | T): Promise<T> {
@@ -21,7 +22,10 @@ export function registerSshIpcHandlers(): void {
   )
 
   ipcMain.handle(IPC_CHANNELS.SSH_DISCONNECT, (_event, serverId: string) =>
-    wrapHandler(() => connectionManager.disconnect(serverId)),
+    wrapHandler(async () => {
+      terminalManager.destroyAllForServer(serverId)
+      await connectionManager.disconnect(serverId)
+    }),
   )
 
   ipcMain.handle(IPC_CHANNELS.SSH_TEST, (_event, input: ServerFormInput) =>

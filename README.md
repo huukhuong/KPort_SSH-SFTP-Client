@@ -14,7 +14,7 @@ A cross-platform desktop client for developers who manage remote servers daily. 
 | Path bar with autocomplete & `cd ..` navigation | Done |
 | Monaco editor — open & save local/remote files | Done |
 | Server metrics in header (CPU, RAM, disk, load) | Done |
-| SSH terminal (xterm) | UI shell — backend in progress |
+| SSH terminal (xterm) | Done |
 | File transfer queue | UI shell — backend in progress |
 | Favorites & quick commands | UI shell — backend in progress |
 | Installer (`.dmg` / `.exe`) | Not yet — see [Building](#building) |

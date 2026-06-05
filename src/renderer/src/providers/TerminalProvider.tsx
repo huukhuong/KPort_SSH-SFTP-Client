@@ -1,77 +1,95 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import {
-  createDefaultSession,
-  createEmptySession,
-  createSessionWithCd,
-  type TerminalSession,
-} from '../hooks/useTerminalSession'
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
+import { useServerStore } from '../stores/serverStore'
+import { writeTerminal } from '../services/terminal'
 
 export interface TerminalTab {
   id: string
   title: string
-  cwd: string
+  serverId: string | null
+  initialCwd?: string
 }
 
 interface TerminalContextValue {
   tabs: TerminalTab[]
   activeTabId: string
-  sessions: Record<string, TerminalSession>
+  isConnected: boolean
+  activeServerId: string | null
   setActiveTabId: (id: string) => void
   addTab: () => void
   removeTab: (tabId: string) => void
-  updateSession: (tabId: string, updater: (session: TerminalSession) => TerminalSession) => void
   openTerminalHere: (path: string) => void
   injectCommand: (command: string) => void
+  registerTerminalId: (tabId: string, terminalId: string) => void
+  unregisterTerminalId: (tabId: string) => void
 }
 
 const TerminalContext = createContext<TerminalContextValue | null>(null)
 
-const DEFAULT_CWD = '/var/www/api'
-
-const FIRST_TAB: TerminalTab = {
-  id: '1',
-  title: `bash — ${DEFAULT_CWD}`,
-  cwd: DEFAULT_CWD,
-}
-
 let nextTabId = 2
 
-function createTab(index: number, cwd = DEFAULT_CWD): TerminalTab {
-  const id = String(nextTabId++)
+function createTabTitle(index: number, label: string): string {
+  return index === 1 ? `bash — ${label}` : `bash ${index} — ${label}`
+}
+
+function createTab(index: number, serverId: string | null, label: string, initialCwd?: string): TerminalTab {
   return {
-    id,
-    title: index === 1 ? `bash — ${cwd}` : `bash ${index} — ${cwd}`,
-    cwd,
+    id: String(nextTabId++),
+    title: createTabTitle(index, label),
+    serverId,
+    initialCwd,
   }
 }
 
 export function TerminalProvider({ children }: { children: ReactNode }) {
-  const [tabs, setTabs] = useState<TerminalTab[]>([FIRST_TAB])
-  const [sessions, setSessions] = useState<Record<string, TerminalSession>>({
-    [FIRST_TAB.id]: createDefaultSession(DEFAULT_CWD),
-  })
-  const [activeTabId, setActiveTabId] = useState(FIRST_TAB.id)
+  const activeServerId = useServerStore((state) => state.activeServerId)
+  const servers = useServerStore((state) => state.servers)
+  const activeServer = servers.find((server) => server.id === activeServerId)
+  const isConnected = activeServer?.status === 'connected'
+  const serverLabel = activeServer ? activeServer.name : 'no server'
 
-  const updateSession = useCallback(
-    (tabId: string, updater: (session: TerminalSession) => TerminalSession) => {
-      setSessions((current) => ({
-        ...current,
-        [tabId]: updater(current[tabId]),
-      }))
+  const [tabs, setTabs] = useState<TerminalTab[]>([
+    {
+      id: '1',
+      title: createTabTitle(1, serverLabel),
+      serverId: activeServerId,
     },
-    [],
-  )
+  ])
+  const [activeTabId, setActiveTabId] = useState('1')
+  const terminalIdsRef = useRef<Record<string, string>>({})
+
+  useEffect(() => {
+    if (!activeServerId || !isConnected) return
+
+    setTabs((current) =>
+      current.map((tab) =>
+        tab.serverId ? tab : { ...tab, serverId: activeServerId, title: createTabTitle(1, serverLabel) },
+      ),
+    )
+  }, [activeServerId, isConnected, serverLabel])
+
+  const registerTerminalId = useCallback((tabId: string, terminalId: string) => {
+    terminalIdsRef.current[tabId] = terminalId
+  }, [])
+
+  const unregisterTerminalId = useCallback((tabId: string) => {
+    delete terminalIdsRef.current[tabId]
+  }, [])
 
   const addTab = useCallback(() => {
-    const tab = createTab(tabs.length + 1)
+    const tab = createTab(tabs.length + 1, activeServerId, serverLabel)
 
     setTabs((current) => [...current, tab])
-    setSessions((current) => ({
-      ...current,
-      [tab.id]: createEmptySession(DEFAULT_CWD),
-    }))
     setActiveTabId(tab.id)
-  }, [tabs.length])
+  }, [activeServerId, serverLabel, tabs.length])
 
   const removeTab = useCallback((tabId: string) => {
     setTabs((current) => {
@@ -91,54 +109,30 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
       return nextTabs
     })
 
-    setSessions((current) => {
-      if (!(tabId in current)) return current
-      const { [tabId]: _removed, ...rest } = current
-      return rest
-    })
-  }, [])
+    unregisterTerminalId(tabId)
+  }, [unregisterTerminalId])
 
-  const openTerminalHere = useCallback((path: string) => {
-    setTabs((current) => {
-      const tab: TerminalTab = {
-        id: String(nextTabId++),
-        title: `bash — ${path}`,
-        cwd: path,
-      }
+  const openTerminalHere = useCallback(
+    (path: string) => {
+      if (!activeServerId) return
 
-      setSessions((sessions) => ({
-        ...sessions,
-        [tab.id]: createSessionWithCd(path),
-      }))
+      const tab = createTab(tabs.length + 1, activeServerId, path, path)
+
+      setTabs((current) => [...current, tab])
       setActiveTabId(tab.id)
-
-      return [...current, tab]
-    })
-  }, [])
+    },
+    [activeServerId, tabs.length],
+  )
 
   const injectCommand = useCallback(
     (command: string) => {
-      const tabId = activeTabId
       const trimmed = command.trim()
       if (!trimmed) return
 
-      setSessions((current) => {
-        const active = current[tabId]
-        if (!active) return current
+      const terminalId = terminalIdsRef.current[activeTabId]
+      if (!terminalId) return
 
-        return {
-          ...current,
-          [tabId]: {
-            ...active,
-            history: [
-              ...active.history,
-              { type: 'command', text: trimmed },
-              ...runInjectedCommand(trimmed),
-            ],
-            inputState: { value: '', cursor: 0 },
-          },
-        }
-      })
+      void writeTerminal(terminalId, `${trimmed}\n`)
     },
     [activeTabId],
   )
@@ -147,23 +141,27 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
     () => ({
       tabs,
       activeTabId,
-      sessions,
+      isConnected,
+      activeServerId,
       setActiveTabId,
       addTab,
       removeTab,
-      updateSession,
       openTerminalHere,
       injectCommand,
+      registerTerminalId,
+      unregisterTerminalId,
     }),
     [
       tabs,
       activeTabId,
-      sessions,
+      isConnected,
+      activeServerId,
       addTab,
       removeTab,
-      updateSession,
       openTerminalHere,
       injectCommand,
+      registerTerminalId,
+      unregisterTerminalId,
     ],
   )
 
@@ -176,31 +174,4 @@ export function useTerminal() {
     throw new Error('useTerminal must be used within TerminalProvider')
   }
   return context
-}
-
-function runInjectedCommand(command: string) {
-  const cmd = command.trim()
-
-  switch (cmd) {
-    case 'docker ps':
-      return [
-        { type: 'output-header' as const, text: 'CONTAINER ID   IMAGE          STATUS' },
-        { type: 'output' as const, text: 'a1b2c3d4e5f6   api:latest     Up 2 hours' },
-      ]
-    case 'pm2 status':
-      return [
-        { type: 'output-header' as const, text: 'id  name   status' },
-        { type: 'output' as const, text: '0   api    online' },
-      ]
-    case 'nginx -t':
-      return [{ type: 'output' as const, text: 'nginx: configuration file test is successful' }]
-    default:
-      if (cmd.startsWith('docker logs')) {
-        return [
-          { type: 'output' as const, text: 'Listening on :3000' },
-          { type: 'output' as const, text: 'Health check OK' },
-        ]
-      }
-      return [{ type: 'output' as const, text: `(mock) ${cmd}` }]
-  }
 }

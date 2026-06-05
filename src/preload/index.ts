@@ -2,6 +2,12 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS } from '../shared/ipc-channels'
 import type { KPortApi } from '../shared/kport-api'
 import type { ServerFormInput } from '../shared/server'
+import type {
+  TerminalCreateInput,
+  TerminalDataEvent,
+  TerminalExitEvent,
+  TerminalResizeInput,
+} from '../shared/terminal'
 
 const api: KPortApi = {
   ping: () => Promise.resolve('pong'),
@@ -34,6 +40,33 @@ const api: KPortApi = {
     readFile: (path: string) => ipcRenderer.invoke(IPC_CHANNELS.FS_READ_FILE, path),
     writeFile: (path: string, content: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.FS_WRITE_FILE, path, content),
+  },
+  terminal: {
+    create: (input: TerminalCreateInput) =>
+      ipcRenderer.invoke(IPC_CHANNELS.TERMINAL_CREATE, input),
+    write: (terminalId: string, data: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.TERMINAL_WRITE, terminalId, data),
+    resize: (input: TerminalResizeInput) =>
+      ipcRenderer.invoke(IPC_CHANNELS.TERMINAL_RESIZE, input),
+    destroy: (terminalId: string) => ipcRenderer.invoke(IPC_CHANNELS.TERMINAL_DESTROY, terminalId),
+    onData: (callback: (event: TerminalDataEvent) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: TerminalDataEvent) => {
+        callback(payload)
+      }
+      ipcRenderer.on(IPC_CHANNELS.TERMINAL_DATA, listener)
+      return () => {
+        ipcRenderer.removeListener(IPC_CHANNELS.TERMINAL_DATA, listener)
+      }
+    },
+    onExit: (callback: (event: TerminalExitEvent) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: TerminalExitEvent) => {
+        callback(payload)
+      }
+      ipcRenderer.on(IPC_CHANNELS.TERMINAL_EXIT, listener)
+      return () => {
+        ipcRenderer.removeListener(IPC_CHANNELS.TERMINAL_EXIT, listener)
+      }
+    },
   },
 }
 

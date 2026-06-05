@@ -1,88 +1,8 @@
 import { ActionIcon, Group } from '@mantine/core'
 import { IconPlus, IconX } from '@tabler/icons-react'
-import { useEffect } from 'react'
 import { useTerminalPanel } from '../../hooks/useTerminalPanel'
-import {
-  useTerminalSession,
-  type TerminalHistoryEntry,
-  type TerminalSession,
-} from '../../hooks/useTerminalSession'
 import classes from '../../styles/layout.module.css'
-import { TerminalPromptLine } from './TerminalPromptLine'
-
-function HistoryLine({ entry, cwd }: { entry: TerminalHistoryEntry; cwd: string }) {
-  if (entry.type === 'command') {
-    return <TerminalPromptLine cwd={cwd} command={entry.text} />
-  }
-
-  if (entry.type === 'output-header') {
-    return <div className={`${classes.terminalLine} ${classes.terminalOutputHeader}`}>{entry.text}</div>
-  }
-
-  if (entry.type === 'error') {
-    return <div className={`${classes.terminalLine} ${classes.terminalError}`}>{entry.text}</div>
-  }
-
-  return <div className={`${classes.terminalLine} ${classes.terminalOutput}`}>{entry.text}</div>
-}
-
-interface InteractiveTerminalProps {
-  session: TerminalSession
-  isActive: boolean
-  onSessionChange: (updater: (current: TerminalSession) => TerminalSession) => void
-}
-
-function InteractiveTerminal({ session, isActive, onSessionChange }: InteractiveTerminalProps) {
-  const {
-    bodyRef,
-    inputRef,
-    endRef,
-    history,
-    input,
-    cursorLeft,
-    handleKeyDown,
-    handlePaste,
-    handleInputClick,
-    focus,
-  } = useTerminalSession(session, onSessionChange, { isActive })
-
-  useEffect(() => {
-    if (isActive) {
-      focus()
-    }
-  }, [isActive, focus])
-
-  return (
-    <div
-      ref={bodyRef}
-      className={`${classes.terminalBody} ${classes.terminalBodyInteractive}`}
-      tabIndex={isActive ? 0 : -1}
-      role="textbox"
-      aria-label="Terminal input"
-      aria-multiline="true"
-      onKeyDown={handleKeyDown}
-      onPaste={handlePaste}
-      onClick={(event) => {
-        if (event.target === bodyRef.current) {
-          focus()
-        }
-      }}
-    >
-      {history.map((entry, index) => (
-        <HistoryLine key={`${entry.type}-${index}`} entry={entry} cwd={session.cwd} />
-      ))}
-      <TerminalPromptLine
-        cwd={session.cwd}
-        input={input}
-        cursorLeft={cursorLeft}
-        showCursor={isActive}
-        inputRef={inputRef}
-        onInputClick={handleInputClick}
-      />
-      <div ref={endRef} className={classes.terminalScrollAnchor} aria-hidden />
-    </div>
-  )
-}
+import { XTermView } from './XTermView'
 
 interface TerminalTabLabelProps {
   title: string
@@ -115,8 +35,7 @@ function TerminalTabLabel({ title, closable, onClose }: TerminalTabLabelProps) {
 }
 
 export function TerminalPanel() {
-  const { tabs, activeTabId, sessions, actions } = useTerminalPanel()
-  const activeSession = activeTabId ? sessions[activeTabId] : null
+  const { tabs, activeTabId, isTabConnected, actions } = useTerminalPanel()
 
   return (
     <div className={classes.terminalPanelRoot}>
@@ -149,13 +68,22 @@ export function TerminalPanel() {
       </div>
 
       <div className={classes.terminalTabPanel} role="tabpanel">
-        {activeSession && (
-          <InteractiveTerminal
-            session={activeSession}
-            isActive
-            onSessionChange={(updater) => actions.updateSession(activeTabId!, updater)}
-          />
-        )}
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            className={`${classes.terminalTabPane} ${tab.id === activeTabId ? '' : classes.terminalTabPaneHidden}`}
+          >
+            <XTermView
+              tabId={tab.id}
+              serverId={tab.serverId}
+              isConnected={isTabConnected(tab.serverId)}
+              initialCwd={tab.initialCwd}
+              isActive={tab.id === activeTabId}
+              onReady={actions.registerTerminalId}
+              onClosed={actions.unregisterTerminalId}
+            />
+          </div>
+        ))}
       </div>
     </div>
   )
