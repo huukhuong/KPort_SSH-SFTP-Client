@@ -32,7 +32,7 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 2. **Phase 3 polish** — SFTP `mkdir` / `rename` / `delete` + wire explorer context menu
 3. **Phase 7** — Persist favorites + quick commands in SQLite
 4. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
-5. **Phase 9** — `electron-builder` (`.dmg` / `.exe`) + credential hardening
+5. **Phase 9** — Code signing / notarization + credential hardening
 
 ---
 
@@ -416,7 +416,7 @@ Does not block daily dev use. Items from [IDEA — Future Features](./IDEA.md#fu
 
 | Item | Status |
 | ---- | ------ |
-| `electron-builder` packaging (`.dmg` / `.exe` / AppImage) | ⬜ |
+| `electron-builder` + GitHub Actions release on `main` | ✅ `.github/workflows/release.yml` |
 | Credential keychain / encrypt-at-rest | ⬜ (passwords plaintext in SQLite today) |
 | App icon + macOS dev Dock branding | ✅ `scripts/generate-app-icon.js`, `prepare-electron-shell.js` |
 | `yarn preview` custom Electron shell | ⬜ (still `electron-vite preview` direct; see dev script pattern) |

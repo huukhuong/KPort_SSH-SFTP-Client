@@ -1,0 +1,57 @@
+appId: com.huukhuongit.kport
+productName: KPort
+copyright: Copyright © 2026 KPort
+
+directories:
+  output: release
+  buildResources: resources
+
+files:
+  - out/**/*
+  - package.json
+
+extraResources:
+  - from: resources
+    to: resources
+    filter:
+      - "**/*"
+
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**"
+
+mac:
+  category: public.app-category.developer-tools
+  icon: resources/icon.icns
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  target:
+    - dmg
+    - zip
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+
+win:
+  icon: resources/icon.ico
+  target:
+    - nsis
+  artifactName: ${productName}-${version}-win-${arch}.${ext}
+
+linux:
+  icon: resources/icon.png
+  category: Network
+  maintainer: KPort
+  executableName: kport
+  target:
+    - AppImage
+    - deb
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
+
+deb:
+  packageName: kport
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: KPort
+
+publish: null
