@@ -1,15 +1,18 @@
 {
-  "name": "kport",
+  "name": "kport_ssh-sftp-client",
   "version": "0.1.0",
   "private": true,
+  "productName": "KPort",
   "description": "A cross-platform SSH & SFTP client for developers",
   "main": "./out/main/index.js",
   "type": "module",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "node scripts/dev.js",
+    "prepare:electron-shell": "node scripts/prepare-electron-shell.js",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.web.json && tsc --noEmit -p tsconfig.node.json",
+    "generate:icons": "node scripts/generate-app-icon.js",
     "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
   "dependencies": {
@@ -36,9 +39,11 @@
     "electron": "^33.3.1",
     "electron-rebuild": "^3.2.9",
     "electron-vite": "^2.3.0",
+    "png-to-ico": "^3.0.1",
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
+    "sharp": "^0.34.5",
     "typescript": "^5.7.3",
     "vite": "^5.4.14"
   }

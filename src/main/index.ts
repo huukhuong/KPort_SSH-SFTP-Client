@@ -1,6 +1,8 @@
 import { app, BrowserWindow, screen } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
+import { APP_DISPLAY_NAME } from '../shared/app-brand'
+import { loadAppIcon } from './app-paths'
 import { closeDatabase, getDatabase } from './db/index'
 import { registerIpcHandlers } from './ipc/register'
 
@@ -23,6 +25,8 @@ function createWindow(): void {
   const preloadPath = resolvePreloadPath()
   const { workArea } = screen.getPrimaryDisplay()
 
+  const appIcon = loadAppIcon()
+
   const mainWindow = new BrowserWindow({
     x: workArea.x,
     y: workArea.y,
@@ -31,7 +35,8 @@ function createWindow(): void {
     minWidth: 960,
     minHeight: 640,
     show: false,
-    title: 'KPort',
+    title: APP_DISPLAY_NAME,
+    icon: appIcon?.image,
     backgroundColor: '#1a1b1e',
     webPreferences: {
       preload: preloadPath,
@@ -57,7 +62,18 @@ function createWindow(): void {
   }
 }
 
+if (process.platform === 'darwin') {
+  app.setName(APP_DISPLAY_NAME)
+}
+
 app.whenReady().then(() => {
+  const appIcon = loadAppIcon()
+  if (process.platform === 'darwin' && appIcon) {
+    app.dock?.setIcon(appIcon.image)
+  } else if (!app.isPackaged && !appIcon) {
+    console.warn('[KPort] App icon not found. Run: yarn generate:icons')
+  }
+
   getDatabase()
   registerIpcHandlers()
   createWindow()

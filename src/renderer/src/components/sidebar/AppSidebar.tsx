@@ -19,6 +19,7 @@ import {
   IconStar,
   IconTerminal2,
 } from '@tabler/icons-react'
+import { APP_SHORT_NAME, APP_TAGLINE } from '../../../../shared/app-brand'
 import { useAppSidebar } from '../../hooks/useAppSidebar'
 import type { Server, ServerStatus } from '../../types'
 import classes from '../../styles/layout.module.css'
@@ -39,9 +40,14 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
           <ThemeIcon variant="light" size="sm">
             <IconServer size={14} />
           </ThemeIcon>
-          <Text size="sm" fw={700}>
-            KPort
-          </Text>
+          <Stack gap={0}>
+            <Text size="sm" fw={700} lh={1.2}>
+              {APP_SHORT_NAME}
+            </Text>
+            <Text size="xs" c="dimmed" lh={1.2}>
+              {APP_TAGLINE}
+            </Text>
+          </Stack>
         </Group>
         <ActionIcon variant="light" color="blue" size="sm" aria-label="Add server" onClick={onAddServer}>
           <IconPlus size={14} />
