@@ -1,5 +1,6 @@
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
+import './styles/variables.css'
 import './styles/global.css'
 
 import { MantineProvider } from '@mantine/core'
@@ -11,7 +12,7 @@ import { theme } from './theme'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="dark">
+    <MantineProvider theme={theme} defaultColorScheme="dark" forceColorScheme="dark">
       <Notifications position="top-right" />
       <App />
     </MantineProvider>

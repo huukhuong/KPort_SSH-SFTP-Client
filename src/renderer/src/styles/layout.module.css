@@ -1,0 +1,461 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--app-chrome);
+}
+
+.appHeader {
+  flex: 0 0 48px;
+  border-bottom: 1px solid var(--app-border-strong);
+  background: var(--app-surface-header);
+}
+
+.bodyRow {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex: 0 0 auto;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--app-surface-sidebar);
+  border-right: 1px solid var(--app-border-strong);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.28);
+}
+
+.sidebarBrand {
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface-header);
+  border-left: 3px solid var(--app-accent-sidebar);
+}
+
+.sidebarResizeHandle {
+  flex: 0 0 8px;
+  width: 8px;
+  cursor: col-resize;
+  background: var(--app-chrome);
+  position: relative;
+  z-index: 5;
+  touch-action: none;
+}
+
+.sidebarResizeHandle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: 0 auto;
+  width: 1px;
+  background: var(--app-border-strong);
+}
+
+.sidebarResizeHandle:hover::before,
+.sidebarResizeHandle:active::before {
+  width: 2px;
+  background: var(--mantine-color-blue-5);
+}
+
+.mainArea {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--app-chrome);
+  padding: 4px;
+}
+
+.workspaceColumn {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  gap: 4px;
+}
+
+.explorersRow {
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 140px;
+  overflow: hidden;
+  gap: 4px;
+}
+
+.explorerPane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 6px;
+}
+
+.explorerPaneLocal {
+  background: var(--app-surface-local);
+}
+
+.explorerPaneRemote {
+  background: var(--app-surface-remote);
+}
+
+.explorerPaneGrow {
+  flex: 1;
+}
+
+.resizeHandleCol {
+  flex: 0 0 8px;
+  width: 8px;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+  touch-action: none;
+}
+
+.resizeHandleRow {
+  flex: 0 0 8px;
+  height: 8px;
+  cursor: row-resize;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+  touch-action: none;
+}
+
+.resizeHandleCol::before,
+.resizeHandleRow::before {
+  content: '';
+  position: absolute;
+  background: var(--app-border-strong);
+  border-radius: 1px;
+}
+
+.resizeHandleCol::before {
+  inset: 4px 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+.resizeHandleRow::before {
+  inset: 0 4px;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.resizeHandleCol:hover::before,
+.resizeHandleCol:active::before,
+.resizeHandleRow:hover::before,
+.resizeHandleRow:active::before {
+  background: var(--mantine-color-blue-5);
+}
+
+.editorArea {
+  flex: 1;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--app-surface-editor);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 6px;
+}
+
+.bottomArea {
+  flex: 0 0 auto;
+  min-height: 36px;
+  overflow: hidden;
+  background: var(--app-surface-terminal);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 6px;
+}
+
+.bottomPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.panelHeader {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  height: 36px;
+  border-bottom: 1px solid var(--app-border-strong);
+  background: var(--app-surface-header);
+}
+
+.panelHeaderTitle {
+  color: var(--mantine-color-dark-1);
+  letter-spacing: 0.06em;
+}
+
+.panelHeaderAccentLocal,
+.panelHeaderAccentRemote,
+.panelHeaderAccentEditor,
+.panelHeaderAccentTerminal {
+  padding-left: 8px;
+}
+
+.panelHeaderAccentLocal {
+  border-left: 3px solid var(--app-accent-local);
+}
+
+.panelHeaderAccentRemote {
+  border-left: 3px solid var(--app-accent-remote);
+}
+
+.panelHeaderAccentEditor {
+  border-left: 3px solid var(--app-accent-editor);
+}
+
+.panelHeaderAccentTerminal {
+  border-left: 3px solid var(--app-accent-terminal);
+}
+
+.explorerPathBar {
+  border-bottom: 1px solid var(--app-border);
+  background: var(--mantine-color-dark-9);
+}
+
+.panelBody {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.treeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: default;
+  font-size: 13px;
+  user-select: none;
+}
+
+.treeRow:hover {
+  background: var(--app-hover);
+}
+
+.treeRowActive {
+  background: var(--app-active);
+  box-shadow: inset 2px 0 0 var(--app-active-border);
+}
+
+.treeIndent1 {
+  padding-left: 20px;
+}
+
+.treeIndent2 {
+  padding-left: 36px;
+}
+
+.treeIndent3 {
+  padding-left: 52px;
+}
+
+.editorContent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.lineNumbers {
+  flex: 0 0 48px;
+  padding: 12px 8px;
+  text-align: right;
+  color: var(--mantine-color-dark-1);
+  background: var(--mantine-color-dark-6);
+  border-right: 1px solid var(--app-border-strong);
+  user-select: none;
+}
+
+.codeArea {
+  flex: 1;
+  padding: 12px 16px;
+  overflow: auto;
+  white-space: pre;
+  color: var(--mantine-color-dark-0);
+  background: var(--app-surface-editor-code);
+}
+
+.terminalTabPanel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.terminalBody {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  padding: 8px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  background: var(--mantine-color-dark-9);
+}
+
+.terminalScrollAnchor {
+  height: 1px;
+  flex-shrink: 0;
+}
+
+.terminalBodyInteractive {
+  cursor: text;
+  outline: none;
+}
+
+.terminalBodyInteractive:focus {
+  outline: none;
+}
+
+.terminalLine {
+  margin-bottom: 2px;
+}
+
+.terminalUser {
+  color: var(--app-terminal-user);
+  font-weight: 700;
+}
+
+.terminalSep {
+  color: var(--mantine-color-dark-2);
+}
+
+.terminalPath {
+  color: var(--app-terminal-path);
+  font-weight: 600;
+}
+
+.terminalSymbol {
+  color: var(--app-terminal-symbol);
+  font-weight: 700;
+}
+
+.terminalInputArea {
+  position: relative;
+  display: inline;
+  cursor: text;
+}
+
+.terminalCmd {
+  color: var(--app-terminal-cmd);
+  font-weight: 600;
+}
+
+.terminalCursorOverlay {
+  position: absolute;
+  top: 0;
+  width: 1ch;
+  height: 1.15em;
+  background: var(--app-terminal-cmd);
+  pointer-events: none;
+  opacity: .6;
+}
+
+.terminalOutputHeader {
+  color: var(--app-terminal-output-header);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.terminalOutput {
+  color: var(--app-terminal-output);
+}
+
+.terminalError {
+  color: var(--mantine-color-red-4);
+}
+
+.terminalLogTag {
+  color: var(--app-terminal-log-tag);
+  font-weight: 700;
+}
+
+.terminalLogMsg {
+  color: var(--app-terminal-log-msg);
+}
+
+.terminalTabBar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  padding-right: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--mantine-color-dark-8);
+}
+
+.terminalTabAdd {
+  flex-shrink: 0;
+}
+
+.terminalTabLabel {
+  max-width: 220px;
+}
+
+.terminalTabTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminalTabClose {
+  flex-shrink: 0;
+  opacity: 0.45;
+  color: var(--mantine-color-dark-2);
+}
+
+.terminalTabClose:hover {
+  opacity: 1;
+  color: var(--mantine-color-dark-0);
+}
+
+.transferSection {
+  padding: 8px 12px;
+}
+
+.transferSection + .transferSection {
+  border-top: 1px solid var(--app-border);
+}
+
+.sidebarSection {
+  padding: 8px 0;
+}
+
+.sidebarSection + .sidebarSection {
+  border-top: 1px solid var(--app-border);
+}
+
+.sidebarSectionLabel {
+  color: var(--app-section-label);
+  letter-spacing: 0.1em;
+}
+
+.editorTabBar {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--mantine-color-dark-7);
+}

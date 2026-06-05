@@ -103,7 +103,7 @@ Personal VPS
 
 ## Remote File Explorer
 
-Browse remote files through SFTP.
+Browse remote files through SFTP. Navigation is scoped to the explorer panel only (see [Terminal tabs vs file explorer](#terminal-tabs-vs-file-explorer)).
 
 Features:
 
@@ -166,10 +166,20 @@ Integrated SSH terminal.
 
 Features:
 
-- Multiple Tabs
+- Multiple Tabs (each tab = separate shell session)
 - Copy / Paste
 - Resize Support
 - Command History
+
+### Terminal tabs vs file explorer
+
+Explorer and terminal are **independent**:
+
+- Clicking folders in Local / Remote explorer only changes the **explorer view** (breadcrumb + tree). It does **not** change the working directory of any open terminal tab.
+- Each terminal tab keeps its **own cwd and shell state**. User may have one tab in `/var/www/api`, another in `/var/log`, and browse `/etc/nginx` in the explorer at the same time.
+- Do **not** auto-run `cd` in existing tabs when the user navigates the file tree.
+
+**Open Terminal Here** (see below) is the only built-in way to start a tab at a folder path — and it always opens a **new** tab with a one-time initial cwd, not a live sync.
 
 Common Use Cases:
 
@@ -183,23 +193,20 @@ Common Use Cases:
 
 ## Open Terminal Here
 
-Open terminal directly inside the selected folder.
+Explicit action from the remote (or local) explorer context menu — **not** tied to normal folder clicks.
+
+Behavior:
+
+1. User right-clicks a folder → **Open Terminal Here**
+2. App opens a **new** terminal tab for the active server connection
+3. After the shell is ready, send `cd <selected-path>` once in that tab only
+4. **Existing terminal tabs are unchanged** (no cwd updates, no focus steal unless the new tab is focused by design)
 
 Example:
 
-Selected Folder:
+Selected folder: `/var/www/api` → new tab titled e.g. `bash — /var/www/api` → `cd /var/www/api` runs in that tab only.
 
-/var/www/api
-
-Action:
-
-Open Terminal Here
-
-Result:
-
-cd /var/www/api
-
-executed automatically.
+Does **not** apply when the user merely double-clicks or expands folders in the explorer.
 
 ---
 
@@ -264,7 +271,7 @@ Examples:
 
 ## Favorite Directories
 
-Bookmark common folders.
+Bookmark common folders. Clicking a favorite navigates the **remote explorer only** — it does not `cd` in any terminal tab (same rule as tree navigation).
 
 Examples:
 
@@ -277,7 +284,7 @@ Examples:
 
 ## Quick Commands
 
-Save reusable commands.
+Save reusable commands. Clicking a quick command injects text into the **active terminal tab only** — it does not change explorer path or other tabs.
 
 Examples:
 

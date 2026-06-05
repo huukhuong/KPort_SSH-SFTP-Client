@@ -120,8 +120,9 @@ kport/
 - App shell: sidebar collapse, bottom panel resize
 - Modals: Add / Edit Server (all fields from [IDEA — Server Management](./IDEA.md#server-management))
 - Explorer context menu: Open, Rename, Delete, Upload, Download, Copy Path, Open Terminal Here → toast or console log only
+- Explorer folder click / breadcrumb: navigates **explorer only** — no terminal cwd side effects
 - Monaco: syntax highlighting, multi-tab, dirty indicator `*`
-- xterm.js: fake prompt + local echo (not SSH)
+- xterm.js: fake prompt + local echo (not SSH); **multiple terminal tabs**, each with isolated history/input; **+** to add tab
 - Transfer queue: Uploading / Downloading / Completed / Failed with animated progress bars
 - Dark theme (Mantine) + Tabler Icons
 
@@ -229,7 +230,8 @@ Reuse Phase 0 dual explorer. Add loading spinners, error banners, breadcrumb (if
 - Remote tree: lazy folder load, breadcrumb navigation
 - Local tree: `dialog.showOpenDialog` for root or default to home directory via `fs`
 - Context menu actions call real SFTP (remote) or `fs` (local)
-- Double-click folder → navigate; double-click file → open editor tab (content wired in Phase 5)
+- Double-click folder → navigate explorer only; double-click file → open editor tab (content wired in Phase 5)
+- **No coupling to terminal cwd** — tree navigation must not call `cd` or update any terminal tab
 
 ### Done when
 
@@ -291,17 +293,21 @@ Supported languages per [IDEA — Code Editor](./IDEA.md#code-editor).
 
 ### UI demo
 
-Reuse Phase 0 xterm tabs. Multiple tabs, active tab indicator, panel toggle.
+Reuse Phase 0 xterm tabs. Multiple tabs, **+** to add tab, active tab indicator, panel toggle.
 
 ### Wire real
 
 - IPC: `terminal.create`, `terminal.write`, `terminal.resize`, `terminal.destroy`
 - Main: `sshClient.shell()` stream ↔ xterm (via IPC byte forwarding)
-- Multiple terminal tabs bound to `sessionId`
+- **One SSH shell channel per terminal tab** (`terminalId`), all tabs share the same `sessionId` (server connection) but **not** the same cwd or scrollback
+- Renderer model: `TerminalTab { id, title, sessionId, terminalId, initialCwd?, ... }` — cwd is metadata for prompt display; actual cwd lives on the server shell unless user runs `cd`
 - Copy / paste, fit-on-resize addon
-- **Open Terminal Here:** new tab + send `cd /selected/path` after shell ready
+- **Explorer navigation does not sync cwd** — browsing the remote tree never updates open terminals
+- **Open Terminal Here only:** context menu → `terminal.create({ sessionId, initialCwd })` → new tab → after shell ready, write `cd <path>\n` **once** in that tab; leave other tabs untouched
 
 > **Note:** `node-pty` is only needed for a **local** shell. SSH terminals use the `ssh2` shell stream, not `node-pty`.
+
+> **Design rule:** Multiple tabs exist so users can work in parallel directories. Auto-following explorer clicks would fight that model and surprise users who expect each tab to stay put.
 
 ### Done when
 
@@ -321,8 +327,9 @@ Sidebar sections for Favorites and Quick Commands (mock in Phase 0; now persiste
 
 | Feature              | Implementation                                       |
 | -------------------- | ---------------------------------------------------- |
-| Favorite directories | SQLite, per server; click → navigate remote explorer |
-| Quick commands       | SQLite; click → inject into active terminal          |
+| Favorite directories | SQLite, per server; click → navigate remote explorer only (not terminal cwd) |
+| Quick commands       | SQLite; click → inject into **active** terminal tab only (does not change explorer path) |
+| Open Terminal Here   | New terminal tab + one-time `cd` (Phase 6); never updates existing tabs |
 | Copy path            | Clipboard API on selected file                       |
 | Search remote files  | SSH exec `find` with path scope + timeout            |
 
@@ -423,7 +430,7 @@ Typed preload surface exposed as `window.kport`. Channels grouped by phase.
 
 | Method             | Type   | Description                              |
 | ------------------ | ------ | ---------------------------------------- |
-| `terminal.create`  | invoke | `{ sessionId, cwd? }` → `{ terminalId }` |
+| `terminal.create`  | invoke | `{ sessionId, initialCwd? }` → `{ terminalId }` — `initialCwd` only for **new** tab (Open Terminal Here); not used on explorer browse |
 | `terminal.write`   | invoke | Send input bytes                         |
 | `terminal.resize`  | invoke | `{ cols, rows }`                         |
 | `terminal.destroy` | invoke | Close terminal session                   |
@@ -481,6 +488,16 @@ interface EditorTab {
   language: string;
   content: string;
   isDirty: boolean;
+}
+
+// Terminal tab (Phase 0 mock → Phase 6 IPC) — one shell per tab; independent of explorer navigation
+interface TerminalTab {
+  id: string;
+  title: string; // e.g. "bash — /var/www/api"
+  sessionId: string;
+  terminalId?: string; // set after terminal.create
+  initialCwd?: string; // optional snapshot when opened via Open Terminal Here
+  // Explorer cwd is NOT mirrored here; user cd's in the shell update server state only
 }
 
 // Transfer job (Phase 0 mock → Phase 4 IPC)

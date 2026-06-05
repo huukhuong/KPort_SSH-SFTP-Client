@@ -1,0 +1,36 @@
+:root {
+  /* Surfaces — slightly lifted from deepest tier */
+  --app-chrome: var(--mantine-color-dark-9);
+  --app-surface-header: var(--mantine-color-dark-6);
+  --app-surface-raised: var(--mantine-color-dark-7);
+  --app-surface-sidebar: color-mix(in srgb, var(--mantine-color-blue-9) 10%, var(--mantine-color-dark-8));
+  --app-surface-local: color-mix(in srgb, var(--mantine-color-blue-9) 12%, var(--mantine-color-dark-8));
+  --app-surface-remote: color-mix(in srgb, var(--mantine-color-blue-9) 10%, var(--mantine-color-dark-7));
+  --app-surface-editor: var(--mantine-color-dark-7);
+  --app-surface-editor-code: var(--mantine-color-dark-8);
+  --app-surface-terminal: var(--mantine-color-dark-9);
+  /* Terminal — high-contrast roles */
+  --app-terminal-user: #8ae87a;
+  --app-terminal-path: #7cb8ff;
+  --app-terminal-symbol: #f0c35a;
+  --app-terminal-cmd: #ffffff;
+  --app-terminal-output: #e4eaf4;
+  --app-terminal-output-header: #c8d4e4;
+  --app-terminal-log-tag: #7cb8ff;
+  --app-terminal-log-msg: #dce4f0;
+
+  --app-surface: var(--app-surface-local);
+  --app-border: var(--mantine-color-dark-5);
+  --app-border-strong: color-mix(in srgb, var(--mantine-color-blue-7) 16%, var(--mantine-color-dark-4));
+
+  --app-accent-local: var(--mantine-color-blue-6);
+  --app-accent-remote: var(--mantine-color-blue-6);
+  --app-accent-editor: var(--mantine-color-blue-6);
+  --app-accent-terminal: var(--mantine-color-blue-6);
+  --app-accent-sidebar: var(--mantine-color-blue-6);
+
+  --app-hover: var(--mantine-color-dark-6);
+  --app-active: color-mix(in srgb, var(--mantine-color-blue-7) 14%, var(--mantine-color-dark-8));
+  --app-active-border: var(--mantine-color-blue-6);
+  --app-section-label: var(--mantine-color-dark-2);
+}
