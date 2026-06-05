@@ -1,83 +1,90 @@
 import { Group, Progress, ScrollArea, Stack, Text } from '@mantine/core'
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react'
+import { useEffect } from 'react'
+import { useTransferStore } from '../../stores/transferStore'
+import type { TransferJob } from '../../types'
+import { getFileName } from '../../utils/fileTree'
 import classes from '../../styles/layout.module.css'
 
 export function TransferQueuePanel() {
+  const transfers = useTransferStore((state) => state.transfers)
+  const tickProgress = useTransferStore((state) => state.tickProgress)
+
+  useEffect(() => {
+    const timer = window.setInterval(() => tickProgress(), 700)
+    return () => window.clearInterval(timer)
+  }, [tickProgress])
+
+  const uploading = transfers.filter((job) => job.direction === 'upload' && job.status === 'active')
+  const downloading = transfers.filter((job) => job.direction === 'download' && job.status === 'active')
+  const completed = transfers.filter((job) => job.status === 'completed')
+  const failed = transfers.filter((job) => job.status === 'failed')
+
   return (
     <ScrollArea h="100%" type="auto" offsetScrollbars>
-      <div className={classes.transferSection}>
-        <Text size="xs" fw={600} c="blue" mb="xs" tt="uppercase">
-          Uploading
-        </Text>
-        <TransferItem
-          direction="upload"
-          name="deploy.zip"
-          path="/var/www/api/deploy.zip"
-          progress={62}
-          status="active"
-        />
-      </div>
+      <TransferSection title="Uploading" color="blue">
+        {uploading.length === 0 ? (
+          <Text size="xs" c="dimmed">
+            No active uploads
+          </Text>
+        ) : (
+          uploading.map((job) => <TransferItem key={job.id} job={job} />)
+        )}
+      </TransferSection>
 
-      <div className={classes.transferSection}>
-        <Text size="xs" fw={600} c="dimmed" mb="xs" tt="uppercase">
-          Downloading
-        </Text>
-        <Text size="xs" c="dimmed">
-          No active downloads
-        </Text>
-      </div>
+      <TransferSection title="Downloading" color="dimmed">
+        {downloading.length === 0 ? (
+          <Text size="xs" c="dimmed">
+            No active downloads
+          </Text>
+        ) : (
+          downloading.map((job) => <TransferItem key={job.id} job={job} />)
+        )}
+      </TransferSection>
 
-      <div className={classes.transferSection}>
-        <Text size="xs" fw={600} c="green" mb="xs" tt="uppercase">
-          Completed
-        </Text>
-        <TransferItem
-          direction="download"
-          name="app.log"
-          path="/var/log/app.log"
-          progress={100}
-          status="completed"
-        />
-      </div>
+      <TransferSection title="Completed" color="green">
+        {completed.map((job) => (
+          <TransferItem key={job.id} job={job} />
+        ))}
+      </TransferSection>
 
-      <div className={classes.transferSection}>
-        <Text size="xs" fw={600} c="red" mb="xs" tt="uppercase">
-          Failed
-        </Text>
-        <TransferItem
-          direction="upload"
-          name="config.yml"
-          path="/etc/app/config.yml"
-          progress={18}
-          status="failed"
-          error="Permission denied"
-        />
-      </div>
+      <TransferSection title="Failed" color="red">
+        {failed.map((job) => (
+          <TransferItem key={job.id} job={job} />
+        ))}
+      </TransferSection>
     </ScrollArea>
   )
 }
 
-function TransferItem({
-  direction,
-  name,
-  path,
-  progress,
-  status,
-  error,
+function TransferSection({
+  title,
+  color,
+  children,
 }: {
-  direction: 'upload' | 'download'
-  name: string
-  path: string
-  progress: number
-  status: 'active' | 'completed' | 'failed'
-  error?: string
+  title: string
+  color: string
+  children: React.ReactNode
 }) {
-  const color = status === 'failed' ? 'red' : status === 'completed' ? 'green' : 'blue'
+  return (
+    <div className={classes.transferSection}>
+      <Text size="xs" fw={600} c={color} mb="xs" tt="uppercase">
+        {title}
+      </Text>
+      {children}
+    </div>
+  )
+}
+
+function TransferItem({ job }: { job: TransferJob }) {
+  const path = job.direction === 'upload' ? job.remotePath : job.remotePath
+  const name = getFileName(job.localPath)
+  const color = job.status === 'failed' ? 'red' : job.status === 'completed' ? 'green' : 'blue'
 
   return (
     <Stack gap={4}>
       <Group gap="xs" wrap="nowrap">
-        {direction === 'upload' ? (
+        {job.direction === 'upload' ? (
           <IconArrowUp size={14} color="var(--mantine-color-blue-5)" />
         ) : (
           <IconArrowDown size={14} color="var(--mantine-color-teal-5)" />
@@ -91,13 +98,13 @@ function TransferItem({
           </Text>
         </div>
         <Text size="xs" c="dimmed" ml="auto">
-          {progress}%
+          {job.progress}%
         </Text>
       </Group>
-      <Progress value={progress} size="xs" color={color} />
-      {error && (
+      <Progress value={job.progress} size="xs" color={color} animated={job.status === 'active'} />
+      {job.error && (
         <Text size="xs" c="red">
-          {error}
+          {job.error}
         </Text>
       )}
     </Stack>

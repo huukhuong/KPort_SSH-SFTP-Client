@@ -1,7 +1,10 @@
 import { useDisclosure } from '@mantine/hooks'
+import { useState } from 'react'
 import { BOTTOM_HEADER_HEIGHT } from '../../constants/layout'
+import { TerminalProvider } from '../../providers/TerminalProvider'
 import { useSidebarResize } from '../../hooks/useSidebarResize'
 import { useWorkspaceResize } from '../../hooks/useWorkspaceResize'
+import type { Server } from '../../types'
 import { FileExplorerPanel } from '../explorer/FileExplorerPanel'
 import { EditorPanel } from '../editor/EditorPanel'
 import { ServerFormModal } from '../server/ServerFormModal'
@@ -25,11 +28,27 @@ export function AppLayout() {
     toggleBottomPanel,
   } = useWorkspaceResize()
   const [serverModalOpen, { open: openServerModal, close: closeServerModal }] = useDisclosure(false)
+  const [editingServer, setEditingServer] = useState<Server | null>(null)
 
   const localExplorerWidth = `${localExplorerRatio * 100}%`
 
+  const handleAddServer = () => {
+    setEditingServer(null)
+    openServerModal()
+  }
+
+  const handleEditServer = (server: Server) => {
+    setEditingServer(server)
+    openServerModal()
+  }
+
+  const handleCloseServerModal = () => {
+    closeServerModal()
+    setEditingServer(null)
+  }
+
   return (
-    <>
+    <TerminalProvider>
       <div className={classes.shell}>
         <header className={classes.appHeader}>
           <AppHeader onToggleSidebar={toggleSidebar} sidebarOpened={sidebarOpen} />
@@ -39,7 +58,7 @@ export function AppLayout() {
           {sidebarOpen && (
             <>
               <aside className={classes.sidebar} style={{ width: sidebarWidth }}>
-                <AppSidebar onAddServer={openServerModal} />
+                <AppSidebar onAddServer={handleAddServer} onEditServer={handleEditServer} />
               </aside>
               <div
                 className={classes.sidebarResizeHandle}
@@ -62,7 +81,7 @@ export function AppLayout() {
                   className={`${classes.explorerPane} ${classes.explorerPaneLocal}`}
                   style={{ width: localExplorerWidth, flex: '0 0 auto' }}
                 >
-                  <FileExplorerPanel title="Local" rootPath="/Users/dev" />
+                  <FileExplorerPanel side="local" />
                 </div>
 
                 <div
@@ -76,7 +95,7 @@ export function AppLayout() {
                 <div
                   className={`${classes.explorerPane} ${classes.explorerPaneGrow} ${classes.explorerPaneRemote}`}
                 >
-                  <FileExplorerPanel title="Remote" rootPath="/" />
+                  <FileExplorerPanel side="remote" />
                 </div>
               </div>
 
@@ -113,7 +132,11 @@ export function AppLayout() {
         </div>
       </div>
 
-      <ServerFormModal opened={serverModalOpen} onClose={closeServerModal} />
-    </>
+      <ServerFormModal
+        opened={serverModalOpen}
+        onClose={handleCloseServerModal}
+        editingServer={editingServer}
+      />
+    </TerminalProvider>
   )
 }

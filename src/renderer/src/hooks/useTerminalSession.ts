@@ -22,6 +22,7 @@ export interface TerminalInputState {
 export interface TerminalSession {
   history: TerminalHistoryEntry[]
   inputState: TerminalInputState
+  cwd: string
 }
 
 const INITIAL_HISTORY: TerminalHistoryEntry[] = [
@@ -32,17 +33,29 @@ const INITIAL_HISTORY: TerminalHistoryEntry[] = [
 
 export const EMPTY_INPUT: TerminalInputState = { value: '', cursor: 0 }
 
-export function createDefaultSession(): TerminalSession {
+const DEFAULT_CWD = '/var/www/api'
+
+export function createDefaultSession(cwd = DEFAULT_CWD): TerminalSession {
   return {
     history: [...INITIAL_HISTORY],
     inputState: { ...EMPTY_INPUT },
+    cwd,
   }
 }
 
-export function createEmptySession(): TerminalSession {
+export function createEmptySession(cwd = DEFAULT_CWD): TerminalSession {
   return {
     history: [],
     inputState: { ...EMPTY_INPUT },
+    cwd,
+  }
+}
+
+export function createSessionWithCd(path: string): TerminalSession {
+  return {
+    history: [{ type: 'command', text: `cd ${path}` }],
+    inputState: { ...EMPTY_INPUT },
+    cwd: path,
   }
 }
 
@@ -156,9 +169,10 @@ export function useTerminalSession(
     const cmd = input.trim()
 
     if (cmd === 'clear') {
-      onSessionChange(() => ({
+      onSessionChange((current) => ({
         history: [],
         inputState: { ...EMPTY_INPUT },
+        cwd: current.cwd,
       }))
       requestAnimationFrame(() => {
         scrollToBottom()
@@ -176,6 +190,7 @@ export function useTerminalSession(
         ...output,
       ],
       inputState: { ...EMPTY_INPUT },
+      cwd: cmd.startsWith('cd ') ? cmd.slice(3).trim() || current.cwd : current.cwd,
     }))
     requestAnimationFrame(() => {
       scrollToBottom()

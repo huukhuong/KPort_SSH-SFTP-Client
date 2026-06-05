@@ -107,6 +107,13 @@
   flex: 1;
 }
 
+.explorerPanelBody {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .resizeHandleCol {
   flex: 0 0 8px;
   width: 8px;
@@ -227,6 +234,52 @@
   background: var(--mantine-color-dark-9);
 }
 
+.explorerNavButton {
+  flex-shrink: 0;
+}
+
+.explorerBreadcrumbs {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--app-border);
+}
+
+.explorerContextMenu {
+  min-width: 180px;
+  padding: 4px;
+  border: 1px solid var(--app-border-strong);
+  background: var(--mantine-color-dark-7);
+}
+
+.contextMenuItem,
+.contextMenuItemDanger {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: left;
+  color: var(--mantine-color-dark-0);
+}
+
+.contextMenuItem:hover,
+.contextMenuItemDanger:hover {
+  background: var(--app-hover);
+}
+
+.contextMenuItemDanger {
+  color: var(--mantine-color-red-4);
+}
+
+.contextMenuDivider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--app-border);
+}
+
 .panelBody {
   flex: 1;
   min-height: 0;
@@ -263,6 +316,12 @@
 
 .treeIndent3 {
   padding-left: 52px;
+}
+
+.monacoHost {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .editorContent {

@@ -1,12 +1,12 @@
 import { ActionIcon, Group, Tabs } from '@mantine/core'
 import { IconPlus, IconX } from '@tabler/icons-react'
 import { useEffect } from 'react'
+import { useTerminal } from '../../providers/TerminalProvider'
 import {
   useTerminalSession,
   type TerminalHistoryEntry,
   type TerminalSession,
 } from '../../hooks/useTerminalSession'
-import { useTerminalTabs } from '../../hooks/useTerminalTabs'
 import classes from '../../styles/layout.module.css'
 import { TerminalPromptLine } from './TerminalPromptLine'
 
@@ -27,9 +27,9 @@ const terminalTabStyles = {
   },
 }
 
-function HistoryLine({ entry }: { entry: TerminalHistoryEntry }) {
+function HistoryLine({ entry, cwd }: { entry: TerminalHistoryEntry; cwd: string }) {
   if (entry.type === 'command') {
-    return <TerminalPromptLine command={entry.text} />
+    return <TerminalPromptLine cwd={cwd} command={entry.text} />
   }
 
   if (entry.type === 'output-header') {
@@ -86,9 +86,10 @@ function InteractiveTerminal({ session, isActive, onSessionChange }: Interactive
       }}
     >
       {history.map((entry, index) => (
-        <HistoryLine key={`${entry.type}-${index}`} entry={entry} />
+        <HistoryLine key={`${entry.type}-${index}`} entry={entry} cwd={session.cwd} />
       ))}
       <TerminalPromptLine
+        cwd={session.cwd}
         input={input}
         cursorLeft={cursorLeft}
         showCursor={isActive}
@@ -131,8 +132,15 @@ function TerminalTabLabel({ title, closable, onClose }: TerminalTabLabelProps) {
 }
 
 export function TerminalPanel() {
-  const { tabs, activeTabId, setActiveTabId, addTab, removeTab, sessions, updateSession } =
-    useTerminalTabs()
+  const {
+    tabs,
+    activeTabId,
+    setActiveTabId,
+    addTab,
+    removeTab,
+    sessions,
+    updateSession,
+  } = useTerminal()
 
   return (
     <Tabs
