@@ -20,7 +20,7 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 | 4 Transfer | ✅ Done | Single + folder transfer, drag-drop, queue UI |
 | 5 Editor | ✅ Done | Monaco open/save local + remote |
 | 6 Terminal | ✅ Done | xterm + `ssh2` shell, multi-tab, Open Terminal Here |
-| 7 Productivity | 🟡 Partial | Quick-cmd inject wired; favorites/cmds still mock |
+| 7 Productivity | ✅ Done | SQLite favorites + quick cmds + remote file search |
 | 8 Monitoring | 🟡 Partial | Live metrics polling; threshold warnings not wired |
 | 9 Future | ⬜ Backlog | Packaging, keychain, Docker, etc. |
 
@@ -28,8 +28,8 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 
 ### Next up (recommended order)
 
-1. **Phase 7** — Persist favorites + quick commands in SQLite + remote search
-2. **Phase 8** — CPU/RAM/disk threshold warnings in header
+1. **Phase 8** — CPU/RAM/disk threshold warnings in header
+2. **Phase 9** — Credential encryption + release signing docs
 3. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 4. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 5. **Phase 9** — Code signing / notarization + credential hardening
@@ -110,7 +110,7 @@ kport/
 | 4     | File Transfer     | ✅     | Transfer queue panel     | Upload/download + folders   | Part of IDEA Phase 1                                  |
 | 5     | Code Editor       | ✅     | Monaco tabs              | readFile / writeFile        | Part of IDEA Phase 2                                  |
 | 6     | SSH Terminal      | ✅     | xterm multi-tab          | `ssh2` shell stream         | Part of IDEA Phase 2                                  |
-| 7     | Productivity      | 🟡     | Favorites, quick cmds UI | SQLite + clipboard + find   | IDEA Phase 3                                          |
+| 7     | Productivity      | ✅     | Favorites, quick cmds UI | SQLite + search + favorites | IDEA Phase 3                                          |
 | 8     | Monitoring        | 🟡     | Header badges            | SSH exec polling            | IDEA Phase 4                                          |
 | 9     | Future            | ⬜     | —                        | Backlog                     | IDEA Phase 4 + Future Features                        |
 
@@ -132,7 +132,8 @@ kport/
 3. ~~**Phase 3 + 5** — browse + edit + file ops~~ ✅
 4. ~~**Phase 6** — terminal~~ ✅
 5. ~~**Phase 4** — transfer queue~~ ✅
-6. **Phase 7 + 8** — favorites, quick cmds, health warnings ← **next**
+6. ~~**Phase 7** — favorites, quick cmds, search~~ ✅
+7. **Phase 8 + 9** — health warnings + security ← **next**
 7. **Phase 9** — packaging + security
 
 ---
@@ -362,23 +363,30 @@ sequenceDiagram
 
 ## Phase 7 — Productivity Layer
 
-**Status:** 🟡 Partial
+**Status:** ✅ Done
 
 **Goal:** Speed features — mostly DB + UI wiring.
 
 | Feature              | Status | Implementation |
 | -------------------- | ------ | -------------- |
 | Open Terminal Here   | ✅     | Phase 6 — new tab + one-time `cd` |
-| Quick commands       | 🟡     | Inject wired; list still `mocks/quickCommands.ts` |
-| Favorite directories | ⬜     | UI mock `mocks/favorites.ts`; needs SQLite |
-| Copy path            | 🟡     | `navigator.clipboard` works; still shows demo toast |
-| Search remote files  | ⬜     | SSH exec `find` with timeout |
+| Quick commands       | ✅     | SQLite `quick_commands` + sidebar inject |
+| Favorite directories | ✅     | SQLite `favorite_directories` + context menu add |
+| Copy path            | ✅     | `navigator.clipboard` + toast |
+| Search remote files  | ✅     | SSH exec `find` with 30s timeout + search modal |
+
+### Done
+
+- IPC: `favorites.list/add/remove`, `commands.list/create/delete`, `search.files`
+- Default quick commands seeded on first launch (docker, pm2, nginx)
+- Remote explorer: Search button + Add to Favorites on folder context menu
+- Sidebar favorites with remove action
 
 ### Done when
 
-- Bookmark `/var/www` ⬜
-- One-click `nginx -t` ✅ (via quick command inject)
-- Search `nginx.conf` under `/etc` ⬜
+- ~~Bookmark `/var/www`~~ ✅
+- ~~One-click `nginx -t`~~ ✅
+- ~~Search `nginx.conf` under `/etc`~~ ✅
 
 ---
 
@@ -492,13 +500,13 @@ Typed preload surface exposed as `window.kport`. Implementation status:
 | `terminal:data`    | ✅ event |
 | `terminal:exit`    | ✅ event |
 
-### Phase 7 — Productivity ⬜
+### Phase 7 — Productivity ✅
 
 | Method                     | Status |
 | -------------------------- | ------ |
-| `favorites.list/add/remove`| ⬜     |
-| `commands.list`            | ⬜     |
-| `search.files`             | ⬜     |
+| `favorites.list/add/remove`| ✅     |
+| `commands.list/create/delete` | ✅  |
+| `search.files`             | ✅     |
 
 ---
 

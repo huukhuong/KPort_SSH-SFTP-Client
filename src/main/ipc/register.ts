@@ -1,4 +1,5 @@
 import { registerDialogIpcHandlers } from './dialog'
+import { registerProductivityIpcHandlers } from './productivity'
 import { registerFsIpcHandlers } from './fs'
 import { registerMetricsIpcHandlers } from './metrics'
 import { registerServerIpcHandlers } from './servers'
@@ -16,4 +17,5 @@ export function registerIpcHandlers(): void {
   registerFsIpcHandlers()
   registerTransferIpcHandlers()
   registerDialogIpcHandlers()
+  registerProductivityIpcHandlers()
 }

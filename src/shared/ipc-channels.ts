@@ -41,4 +41,11 @@ export const IPC_CHANNELS = {
   TRANSFER_CANCELLED: 'transfer:cancelled',
   DIALOG_OPEN_FILE: 'dialog:openFile',
   DIALOG_OPEN_DIRECTORY: 'dialog:openDirectory',
+  FAVORITES_LIST: 'favorites:list',
+  FAVORITES_ADD: 'favorites:add',
+  FAVORITES_REMOVE: 'favorites:remove',
+  COMMANDS_LIST: 'commands:list',
+  COMMANDS_CREATE: 'commands:create',
+  COMMANDS_DELETE: 'commands:delete',
+  SEARCH_FILES: 'search:files',
 } as const

@@ -16,8 +16,11 @@ import {
   IconFolderRoot,
   IconHome,
   IconRefresh,
+  IconSearch,
   IconUpload,
 } from '@tabler/icons-react'
+import { useState } from 'react'
+import { useDirectoryFavorites } from '../../hooks/useDirectoryFavorites'
 import { useExplorerDropUpload } from '../../hooks/useExplorerDropUpload'
 import { useLocalRootPicker } from '../../hooks/useLocalRootPicker'
 import { useExplorerMutations } from '../../hooks/useExplorerMutations'
@@ -25,6 +28,7 @@ import { useExplorerPathBar } from '../../hooks/useExplorerPathBar'
 import { useFileExplorer } from '../../hooks/useFileExplorer'
 import { useTransferActions } from '../../hooks/useTransferActions'
 import type { FileTreeNode } from '../../types/fileTree'
+import { RemoteSearchModal } from '../search/RemoteSearchModal'
 import { PanelHeader } from '../layout/PanelHeader'
 import { ExplorerContextMenu } from './ExplorerContextMenu'
 import { ExplorerEntryIcon } from './ExplorerEntryIcon'
@@ -57,6 +61,8 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
   } = useFileExplorer(side)
 
   const pathBarDisabled = side === 'remote' && Boolean(listError)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const { addFavorite } = useDirectoryFavorites(serverId ?? null)
   const { pickLocalRoot } = useLocalRootPicker()
   const { uploadSelectedOrPick, uploadLocalFile, downloadRemoteFile } = useTransferActions()
   const { onDragOver, onDrop } = useExplorerDropUpload({
@@ -95,6 +101,18 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
         accent={accent}
         actions={
           <>
+            {side === 'remote' && (
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                aria-label="Search remote files"
+                title="Search remote files"
+                disabled={!serverId}
+                onClick={() => setSearchOpen(true)}
+              >
+                <IconSearch size={14} />
+              </ActionIcon>
+            )}
             <ActionIcon
               variant="subtle"
               size="sm"
@@ -269,6 +287,21 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
         onUpload={side === 'local' ? (node) => void uploadLocalFile(node.path) : undefined}
         onDownload={side === 'remote' ? (node) => void downloadRemoteFile(node.path) : undefined}
         onOpenTerminalHere={actions.openTerminalHere}
+        onAddFavorite={(node) => void addFavorite(node.path, node.name)}
+      />
+
+      <RemoteSearchModal
+        opened={searchOpen}
+        serverId={serverId ?? null}
+        defaultPath={currentPath}
+        onClose={() => setSearchOpen(false)}
+        onOpenResult={(path) =>
+          actions.openNode({
+            name: path.split('/').filter(Boolean).pop() ?? path,
+            path,
+            type: 'file',
+          })
+        }
       />
 
       <ExplorerNameModal

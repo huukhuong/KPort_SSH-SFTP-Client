@@ -17,6 +17,24 @@ CREATE TABLE IF NOT EXISTS servers (
   is_favorite INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS favorite_directories (
+  id TEXT PRIMARY KEY,
+  server_id TEXT NOT NULL,
+  path TEXT NOT NULL,
+  label TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE(server_id, path)
+);
+
+CREATE TABLE IF NOT EXISTS quick_commands (
+  id TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  command TEXT NOT NULL,
+  group_name TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
 `
 
 export function getDatabase(): Database.Database {
@@ -26,8 +44,34 @@ export function getDatabase(): Database.Database {
   db = new Database(dbPath)
   db.pragma('journal_mode = WAL')
   db.exec(MIGRATION_SQL)
+  seedDefaultQuickCommands(db)
 
   return db
+}
+
+function seedDefaultQuickCommands(database: Database.Database): void {
+  const count = database.prepare('SELECT COUNT(*) AS total FROM quick_commands').get() as {
+    total: number
+  }
+
+  if (count.total > 0) return
+
+  const insert = database.prepare(
+    `INSERT INTO quick_commands (id, label, command, group_name, sort_order, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  )
+
+  const createdAt = new Date().toISOString()
+  const defaults = [
+    ['docker-ps', 'docker ps', 'docker ps', 'Docker', 0],
+    ['docker-logs', 'docker logs -f api', 'docker logs -f api', 'Docker', 1],
+    ['pm2-status', 'pm2 status', 'pm2 status', 'PM2', 2],
+    ['nginx-test', 'nginx -t', 'nginx -t', 'Nginx', 3],
+  ] as const
+
+  for (const [id, label, command, group, sortOrder] of defaults) {
+    insert.run(id, label, command, group, sortOrder, createdAt)
+  }
 }
 
 export function closeDatabase(): void {

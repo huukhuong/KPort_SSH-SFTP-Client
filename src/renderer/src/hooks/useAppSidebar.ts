@@ -1,10 +1,10 @@
 import { notifications } from '@mantine/notifications'
-import { useCallback, useMemo } from 'react'
-import { mockFavorites } from '../mocks/favorites'
-import { mockQuickCommands } from '../mocks/quickCommands'
+import { useCallback } from 'react'
 import { useTerminal } from '../providers/TerminalProvider'
 import { useExplorerStore } from '../stores/explorerStore'
 import { useServerStore } from '../stores/serverStore'
+import { useDirectoryFavorites } from './useDirectoryFavorites'
+import { useQuickCommands } from './useQuickCommands'
 
 export function useAppSidebar() {
   const servers = useServerStore((state) => state.servers)
@@ -16,17 +16,14 @@ export function useAppSidebar() {
   const toggleFavoriteStore = useServerStore((state) => state.toggleFavorite)
   const navigateRemote = useExplorerStore((state) => state.navigateRemote)
   const { injectCommand } = useTerminal()
+  const { favorites, removeFavorite } = useDirectoryFavorites(activeServerId)
+  const { commands: quickCommands } = useQuickCommands()
 
   const navigateFavorite = useCallback(
     (path: string) => {
       navigateRemote(path)
     },
     [navigateRemote],
-  )
-
-  const favorites = useMemo(
-    () => mockFavorites.filter((item) => item.serverId === activeServerId),
-    [activeServerId],
   )
 
   const toggleFavorite = useCallback(
@@ -66,12 +63,13 @@ export function useAppSidebar() {
     error,
     isEmpty: !loading && !error && servers.length === 0,
     favorites,
-    quickCommands: mockQuickCommands,
+    quickCommands,
     actions: {
       setActiveServer,
       connectToServer,
       toggleFavorite,
       navigateFavorite,
+      removeDirectoryFavorite: removeFavorite,
       injectCommand,
     },
   }

@@ -9,6 +9,11 @@ import type {
   TerminalResizeInput,
 } from '../shared/terminal'
 import type {
+  FavoriteDirectoryInput,
+  FileSearchInput,
+  QuickCommandInput,
+} from '../shared/productivity'
+import type {
   TransferDirection,
   TransferFailedEvent,
   TransferJobInput,
@@ -140,6 +145,21 @@ const api: KPortApi = {
   },
   files: {
     getPathForFile: (file: File) => webUtils.getPathForFile(file),
+  },
+  favorites: {
+    list: (serverId?: string) => ipcRenderer.invoke(IPC_CHANNELS.FAVORITES_LIST, serverId),
+    add: (input: FavoriteDirectoryInput) =>
+      ipcRenderer.invoke(IPC_CHANNELS.FAVORITES_ADD, input),
+    remove: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.FAVORITES_REMOVE, id),
+  },
+  commands: {
+    list: () => ipcRenderer.invoke(IPC_CHANNELS.COMMANDS_LIST),
+    create: (input: QuickCommandInput) =>
+      ipcRenderer.invoke(IPC_CHANNELS.COMMANDS_CREATE, input),
+    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.COMMANDS_DELETE, id),
+  },
+  search: {
+    files: (input: FileSearchInput) => ipcRenderer.invoke(IPC_CHANNELS.SEARCH_FILES, input),
   },
 }
 

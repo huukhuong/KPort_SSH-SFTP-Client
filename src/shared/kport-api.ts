@@ -11,6 +11,14 @@ import type {
   TerminalResizeInput,
 } from './terminal'
 import type {
+  FavoriteDirectoryInput,
+  FavoriteDirectoryRecord,
+  FileSearchInput,
+  FileSearchResult,
+  QuickCommandInput,
+  QuickCommandRecord,
+} from './productivity'
+import type {
   TransferDirection,
   TransferFailedEvent,
   TransferJobInput,
@@ -85,6 +93,22 @@ export interface FilesApi {
   getPathForFile: (file: File) => string
 }
 
+export interface FavoritesApi {
+  list: (serverId?: string) => Promise<FavoriteDirectoryRecord[]>
+  add: (input: FavoriteDirectoryInput) => Promise<FavoriteDirectoryRecord>
+  remove: (id: string) => Promise<void>
+}
+
+export interface CommandsApi {
+  list: () => Promise<QuickCommandRecord[]>
+  create: (input: QuickCommandInput) => Promise<QuickCommandRecord>
+  delete: (id: string) => Promise<void>
+}
+
+export interface SearchApi {
+  files: (input: FileSearchInput) => Promise<FileSearchResult[]>
+}
+
 export interface KPortApi {
   ping: () => Promise<string>
   servers: ServersApi
@@ -95,6 +119,9 @@ export interface KPortApi {
   transfer: TransferApi
   dialog: DialogApi
   files: FilesApi
+  favorites: FavoritesApi
+  commands: CommandsApi
+  search: SearchApi
 }
 
 declare global {

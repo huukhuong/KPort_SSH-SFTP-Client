@@ -18,6 +18,7 @@ import {
   IconServer,
   IconStar,
   IconTerminal2,
+  IconX,
 } from '@tabler/icons-react'
 import { APP_SHORT_NAME, APP_TAGLINE } from '../../../../shared/app-brand'
 import { useAppSidebar } from '../../hooks/useAppSidebar'
@@ -123,11 +124,30 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
           <Text px="sm" py={4} size="xs" fw={700} tt="uppercase" className={classes.sidebarSectionLabel}>
             Favorites
           </Text>
+          {favorites.length === 0 && (
+            <Text px="sm" py="xs" size="xs" c="dimmed">
+              Right-click a remote folder and choose Add to Favorites.
+            </Text>
+          )}
           {favorites.map((favorite) => (
             <NavLink
               key={favorite.id}
               label={favorite.label}
+              description={favorite.path}
               leftSection={<IconFolder size={16} />}
+              rightSection={
+                <ActionIcon
+                  variant="transparent"
+                  size="xs"
+                  aria-label={`Remove ${favorite.label}`}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    void actions.removeDirectoryFavorite(favorite.id)
+                  }}
+                >
+                  <IconX size={12} />
+                </ActionIcon>
+              }
               onClick={() => actions.navigateFavorite(favorite.path)}
             />
           ))}

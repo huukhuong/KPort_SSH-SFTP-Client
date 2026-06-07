@@ -23,6 +23,7 @@ interface ExplorerContextMenuProps {
   onUpload?: (node: FileTreeNode) => void
   onDownload?: (node: FileTreeNode) => void
   onOpenTerminalHere?: (path: string) => void
+  onAddFavorite?: (node: FileTreeNode) => void
 }
 
 export function ExplorerContextMenu({
@@ -35,6 +36,7 @@ export function ExplorerContextMenu({
   onUpload,
   onDownload,
   onOpenTerminalHere,
+  onAddFavorite,
 }: ExplorerContextMenuProps) {
   const isLocal = side === 'local'
   const menuRef = useClickOutside<HTMLDivElement>(onClose)
@@ -115,6 +117,12 @@ export function ExplorerContextMenu({
             onClick={() => run(() => onOpenTerminalHere(node.path))}
           />
         </>
+      )}
+      {!isLocal && node.type === 'directory' && onAddFavorite && (
+        <ContextItem
+          label="Add to Favorites"
+          onClick={() => run(() => onAddFavorite(node))}
+        />
       )}
     </Paper>
   )
