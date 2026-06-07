@@ -16,4 +16,19 @@ export function registerDialogIpcHandlers(): void {
 
     return result.filePaths[0]
   })
+
+  ipcMain.handle(IPC_CHANNELS.DIALOG_OPEN_DIRECTORY, async (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) return null
+
+    const result = await dialog.showOpenDialog(window, {
+      properties: ['openDirectory'],
+    })
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null
+    }
+
+    return result.filePaths[0]
+  })
 }

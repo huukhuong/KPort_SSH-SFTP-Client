@@ -13,10 +13,12 @@ import {
   IconArrowLeft,
   IconFilePlus,
   IconFolderPlus,
+  IconFolderRoot,
   IconHome,
   IconRefresh,
   IconUpload,
 } from '@tabler/icons-react'
+import { useLocalRootPicker } from '../../hooks/useLocalRootPicker'
 import { useExplorerMutations } from '../../hooks/useExplorerMutations'
 import { useExplorerPathBar } from '../../hooks/useExplorerPathBar'
 import { useFileExplorer } from '../../hooks/useFileExplorer'
@@ -54,6 +56,7 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
   } = useFileExplorer(side)
 
   const pathBarDisabled = side === 'remote' && Boolean(listError)
+  const { pickLocalRoot } = useLocalRootPicker()
   const { uploadSelectedOrPick, uploadLocalFile, downloadRemoteFile } = useTransferActions()
   const { nameModal, saving, actions: mutationActions } = useExplorerMutations({
     side,
@@ -120,13 +123,24 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
             >
               <IconFolderPlus size={14} />
             </ActionIcon>
+            {side === 'local' && (
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                aria-label="Change local root"
+                title="Change local filesystem root"
+                onClick={() => void pickLocalRoot()}
+              >
+                <IconFolderRoot size={14} />
+              </ActionIcon>
+            )}
             <ActionIcon
               variant="subtle"
               size="sm"
               aria-label="Upload"
               title={
                 side === 'local'
-                  ? 'Upload file to remote folder'
+                  ? 'Upload file or folder to remote'
                   : 'Switch to local panel to upload files'
               }
               disabled={side !== 'local'}

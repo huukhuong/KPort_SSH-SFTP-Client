@@ -136,6 +136,7 @@ const api: KPortApi = {
   },
   dialog: {
     openFile: () => ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_FILE),
+    openDirectory: () => ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_DIRECTORY),
   },
 }
 

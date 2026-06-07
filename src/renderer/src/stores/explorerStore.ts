@@ -15,6 +15,7 @@ interface ExplorerStore {
   navigateLocal: (path: string) => void
   navigateRemote: (path: string) => void
   setRemoteHome: (path: string) => void
+  setLocalRoot: (path: string) => void
   selectLocal: (path: string | null) => void
   selectRemote: (path: string | null) => void
   localListingRefreshToken: number
@@ -54,6 +55,14 @@ export const useExplorerStore = create<ExplorerStore>((set) => ({
     }),
 
   setRemoteHome: (path) => set({ remoteHomePath: path }),
+  setLocalRoot: (path) => {
+    const normalized = normalizeExplorerPath(path)
+    set({
+      localRootPath: normalized,
+      localPath: normalized,
+      selectedLocalPath: normalized,
+    })
+  },
   selectLocal: (path) => set({ selectedLocalPath: path }),
   selectRemote: (path) => set({ selectedRemotePath: path }),
   localListingRefreshToken: 0,

@@ -40,4 +40,5 @@ export const IPC_CHANNELS = {
   TRANSFER_FAILED: 'transfer:failed',
   TRANSFER_CANCELLED: 'transfer:cancelled',
   DIALOG_OPEN_FILE: 'dialog:openFile',
+  DIALOG_OPEN_DIRECTORY: 'dialog:openDirectory',
 } as const

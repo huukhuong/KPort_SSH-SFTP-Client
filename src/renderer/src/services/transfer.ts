@@ -14,14 +14,6 @@ function getTransferApi() {
   return window.kport.transfer
 }
 
-function getDialogApi() {
-  if (!window.kport?.dialog) {
-    throw new Error('KPort dialog API is not available')
-  }
-
-  return window.kport.dialog
-}
-
 export function createTransferId(): string {
   return crypto.randomUUID()
 }
@@ -79,6 +71,4 @@ export function subscribeTransferEvents(handlers: {
   }
 }
 
-export async function pickLocalFile(): Promise<string | null> {
-  return getDialogApi().openFile()
-}
+export { pickLocalFile } from './dialog'

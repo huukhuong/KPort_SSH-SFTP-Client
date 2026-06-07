@@ -3,7 +3,7 @@
 > Implementation roadmap for [IDEA.md](./IDEA.md).  
 > Strategy: **UI demo with mock data first**, then wire Electron main process feature by feature.
 
-**Last updated:** 2026-06-06 · **App version:** `v0.1.0`
+**Last updated:** 2026-06-05 · **App version:** `v0.1.0`
 
 ---
 
@@ -16,8 +16,8 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 | 0 UI shell | ✅ Done | Full layout, resize, dark theme |
 | 1 Servers | ✅ Done | SQLite CRUD + favorite toggle |
 | 2 SSH | ✅ Done | Connect / disconnect / test / status |
-| 3 Explorer | 🟡 Partial | List + path bar wired; mkdir/rename/delete still demo |
-| 4 Transfer | ⬜ Pending | Queue UI only (`mocks/transfers.ts`) |
+| 3 Explorer | ✅ Done | Browse + mutations + local root picker; unzip backlog |
+| 4 Transfer | 🟡 Partial | Single-file upload/download wired; folder transfer next |
 | 5 Editor | ✅ Done | Monaco open/save local + remote |
 | 6 Terminal | ✅ Done | xterm + `ssh2` shell, multi-tab, Open Terminal Here |
 | 7 Productivity | 🟡 Partial | Quick-cmd inject wired; favorites/cmds still mock |
@@ -28,9 +28,9 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 
 ### Next up (recommended order)
 
-1. **Phase 4** — Real upload/download + transfer queue worker
-2. **Phase 3 polish** — SFTP `mkdir` / `rename` / `delete` + wire explorer context menu
-3. **Phase 7** — Persist favorites + quick commands in SQLite
+1. **Phase 4** — Folder transfer + drag-drop polish
+2. **Phase 7** — Persist favorites + quick commands in SQLite
+3. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 4. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 5. **Phase 9** — Code signing / notarization + credential hardening
 
@@ -106,8 +106,8 @@ kport/
 | 0     | UI Demo Shell     | ✅     | Full layout + mocks      | electron-vite scaffold      | — (new; precedes IDEA Phase 1)                        |
 | 1     | Server Management | ✅     | Forms + list             | SQLite CRUD                 | Part of IDEA Phase 1                                  |
 | 2     | SSH Connection    | ✅     | Status dots, header      | `ssh2` connect/test         | Part of IDEA Phase 1                                  |
-| 3     | File Explorer     | 🟡     | Dual explorer + path bar | SFTP list + local `fs`      | Part of IDEA Phase 1                                  |
-| 4     | File Transfer     | ⬜     | Transfer queue panel     | Upload/download worker      | Part of IDEA Phase 1                                  |
+| 3     | File Explorer     | ✅     | Dual explorer + path bar | SFTP/FS list + mutations    | Part of IDEA Phase 1                                  |
+| 4     | File Transfer     | 🟡     | Transfer queue panel     | Single-file upload/download | Part of IDEA Phase 1                                  |
 | 5     | Code Editor       | ✅     | Monaco tabs              | readFile / writeFile        | Part of IDEA Phase 2                                  |
 | 6     | SSH Terminal      | ✅     | xterm multi-tab          | `ssh2` shell stream         | Part of IDEA Phase 2                                  |
 | 7     | Productivity      | 🟡     | Favorites, quick cmds UI | SQLite + clipboard + find   | IDEA Phase 3                                          |
@@ -129,10 +129,10 @@ kport/
 
 1. ~~**Phase 0** — UI demo~~ ✅
 2. ~~**Phase 1 + 2** — servers + SSH~~ ✅
-3. ~~**Phase 3 + 5** — browse + edit~~ 🟡 (browse list done; file ops pending)
+3. ~~**Phase 3 + 5** — browse + edit + file ops~~ ✅
 4. ~~**Phase 6** — terminal~~ ✅
-5. **Phase 4** — transfer queue ← **next**
-6. **Phase 3 polish + 7 + 8** — SFTP ops, favorites, health warnings
+5. **Phase 4** — folder transfer polish ← **next**
+6. **Phase 7 + 8** — favorites, quick cmds, health warnings
 7. **Phase 9** — packaging + security
 
 ---
@@ -259,31 +259,31 @@ sequenceDiagram
 
 ## Phase 3 — Remote File Explorer (SFTP)
 
-**Status:** 🟡 Partial — browse wired; mutations still demo
+**Status:** ✅ Done (unzip remains backlog)
 
 **Goal:** Browse real remote directories; local explorer reads host filesystem.
 
 ### Done
 
-- IPC: `sftp.list`, `fs.list`, `fs.getPaths`
+- IPC: `sftp.list/read/write/mkdir/createFile/rename/delete`, `fs.*` parity
 - Remote + local dual explorer with loading/error states
 - Path bar with autocomplete, Enter navigate, Tab complete, `cd ..` back button
 - Directory listing cache + prefetch on connect
 - Double-click folder → navigate; double-click file → open editor (Phase 5)
+- Context menu: Open, Rename, Delete, Upload, Download, Copy Path, Open Terminal Here
+- Header actions: New file, New folder, Refresh, Change local root (`dialog:openDirectory`)
 - Open Terminal Here → new tab + one-time `cd` (Phase 6)
 - **No terminal cwd coupling** on explorer navigation ✅
 
-### Remaining
+### Remaining (backlog)
 
-- IPC: `sftp.mkdir`, `sftp.rename`, `sftp.delete`
-- Wire context menu: Rename, Delete, Upload, Download (currently `demoAction` toast)
-- Local explorer: optional `dialog.showOpenDialog` for custom root
-- Unzip action (backlog / demo only today)
+- Unzip action (demo toast only)
+- Drag-and-drop between panels (Phase 4 stretch)
 
 ### Done when
 
 - ~~Browse `/var/www` (or equivalent) on a connected server~~ ✅
-- Create, rename, delete files and folders on remote ⬜
+- ~~Create, rename, delete files and folders on remote~~ ✅
 
 ---
 
@@ -450,16 +450,17 @@ Typed preload surface exposed as `window.kport`. Implementation status:
 | `ssh.getStatus`  | ✅     |
 | `ssh.getMetrics` | ✅     |
 
-### Phase 3 — SFTP 🟡
+### Phase 3 — SFTP ✅
 
 | Method           | Status |
 | ---------------- | ------ |
 | `sftp.list`      | ✅     |
 | `sftp.readFile`  | ✅     |
 | `sftp.writeFile` | ✅     |
-| `sftp.mkdir`     | ⬜     |
-| `sftp.rename`    | ⬜     |
-| `sftp.delete`    | ⬜     |
+| `sftp.mkdir`     | ✅     |
+| `sftp.rename`    | ✅     |
+| `sftp.delete`    | ✅     |
+| `dialog.openDirectory` | ✅ |
 
 ### Phase 3 — Local FS ✅
 

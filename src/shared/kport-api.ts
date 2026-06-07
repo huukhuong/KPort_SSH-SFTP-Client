@@ -78,6 +78,7 @@ export interface TransferApi {
 
 export interface DialogApi {
   openFile: () => Promise<string | null>
+  openDirectory: () => Promise<string | null>
 }
 
 export interface KPortApi {
