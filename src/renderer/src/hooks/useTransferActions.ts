@@ -13,6 +13,7 @@ import { useExplorerStore } from '../stores/explorerStore'
 import { useServerStore } from '../stores/serverStore'
 import { useTransferStore } from '../stores/transferStore'
 import type { TransferJob } from '../types'
+import { pickLocalDirectory } from '../services/dialog'
 import { getFileName, joinExplorerEntryPath } from '../utils/fileTree'
 
 function getConnectedServer() {
@@ -137,7 +138,7 @@ export function useTransferActions() {
 
   const uploadSelectedOrPick = useCallback(
     async (selectedPath: string | null, entries: { path: string; type: 'file' | 'directory' }[]) => {
-      const selected = entries.find((entry) => entry.path === selectedPath && entry.type === 'file')
+      const selected = entries.find((entry) => entry.path === selectedPath)
       if (selected) {
         await uploadLocalFile(selected.path)
         return
@@ -147,6 +148,20 @@ export function useTransferActions() {
     },
     [uploadFromPicker, uploadLocalFile],
   )
+
+  const uploadFromDirectoryPicker = useCallback(async () => {
+    try {
+      const localPath = await pickLocalDirectory()
+      if (!localPath) return
+      await uploadLocalFile(localPath)
+    } catch (error) {
+      notifications.show({
+        title: 'Upload failed',
+        message: error instanceof Error ? error.message : 'Could not pick a folder',
+        color: 'red',
+      })
+    }
+  }, [uploadLocalFile])
 
   const cancelJob = useCallback(async (id: string) => {
     try {
@@ -207,6 +222,7 @@ export function useTransferActions() {
     uploadLocalFile,
     downloadRemoteFile,
     uploadFromPicker,
+    uploadFromDirectoryPicker,
     uploadSelectedOrPick,
     cancelJob,
     retryJob,

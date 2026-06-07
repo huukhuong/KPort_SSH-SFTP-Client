@@ -1,3 +1,6 @@
+export const TRANSFER_FOLDER_MAX_DEPTH = 10
+export const TRANSFER_FOLDER_MAX_FILES = 500
+
 export type TransferDirection = 'upload' | 'download'
 
 export type TransferStatus = 'queued' | 'active' | 'completed' | 'failed' | 'cancelled'

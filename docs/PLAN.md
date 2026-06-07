@@ -17,7 +17,7 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 | 1 Servers | ✅ Done | SQLite CRUD + favorite toggle |
 | 2 SSH | ✅ Done | Connect / disconnect / test / status |
 | 3 Explorer | ✅ Done | Browse + mutations + local root picker; unzip backlog |
-| 4 Transfer | 🟡 Partial | Single-file upload/download wired; folder transfer next |
+| 4 Transfer | ✅ Done | Single + folder transfer, drag-drop, queue UI |
 | 5 Editor | ✅ Done | Monaco open/save local + remote |
 | 6 Terminal | ✅ Done | xterm + `ssh2` shell, multi-tab, Open Terminal Here |
 | 7 Productivity | 🟡 Partial | Quick-cmd inject wired; favorites/cmds still mock |
@@ -28,8 +28,8 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 
 ### Next up (recommended order)
 
-1. **Phase 4** — Folder transfer + drag-drop polish
-2. **Phase 7** — Persist favorites + quick commands in SQLite
+1. **Phase 7** — Persist favorites + quick commands in SQLite + remote search
+2. **Phase 8** — CPU/RAM/disk threshold warnings in header
 3. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 4. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 5. **Phase 9** — Code signing / notarization + credential hardening
@@ -107,7 +107,7 @@ kport/
 | 1     | Server Management | ✅     | Forms + list             | SQLite CRUD                 | Part of IDEA Phase 1                                  |
 | 2     | SSH Connection    | ✅     | Status dots, header      | `ssh2` connect/test         | Part of IDEA Phase 1                                  |
 | 3     | File Explorer     | ✅     | Dual explorer + path bar | SFTP/FS list + mutations    | Part of IDEA Phase 1                                  |
-| 4     | File Transfer     | 🟡     | Transfer queue panel     | Single-file upload/download | Part of IDEA Phase 1                                  |
+| 4     | File Transfer     | ✅     | Transfer queue panel     | Upload/download + folders   | Part of IDEA Phase 1                                  |
 | 5     | Code Editor       | ✅     | Monaco tabs              | readFile / writeFile        | Part of IDEA Phase 2                                  |
 | 6     | SSH Terminal      | ✅     | xterm multi-tab          | `ssh2` shell stream         | Part of IDEA Phase 2                                  |
 | 7     | Productivity      | 🟡     | Favorites, quick cmds UI | SQLite + clipboard + find   | IDEA Phase 3                                          |
@@ -131,8 +131,8 @@ kport/
 2. ~~**Phase 1 + 2** — servers + SSH~~ ✅
 3. ~~**Phase 3 + 5** — browse + edit + file ops~~ ✅
 4. ~~**Phase 6** — terminal~~ ✅
-5. **Phase 4** — folder transfer polish ← **next**
-6. **Phase 7 + 8** — favorites, quick cmds, health warnings
+5. ~~**Phase 4** — transfer queue~~ ✅
+6. **Phase 7 + 8** — favorites, quick cmds, health warnings ← **next**
 7. **Phase 9** — packaging + security
 
 ---
@@ -289,26 +289,25 @@ sequenceDiagram
 
 ## Phase 4 — File Transfer
 
-**Status:** ⬜ Pending — UI shell only (`src/renderer/mocks/transfers.ts`)
+**Status:** ✅ Done
 
 **Goal:** Real upload/download with live transfer queue.
 
-### UI demo
-
-Reuse Phase 0 transfer queue panel. Wire to store events instead of static mocks.
-
-### Wire real
+### Done
 
 - IPC: `transfer.upload`, `transfer.download`, `transfer.cancel`, `transfer.retry`
-- Main: queue worker; push `transfer:progress` events to renderer
-- Single file upload/download first; then recursive folder transfer
-- Limits (document in code): max depth, max concurrent jobs, cancel in-flight streams
-- Optional: drag-and-drop local → remote
+- Main: queue worker with progress events (`transfer:started/progress/complete/failed/cancelled`)
+- Single-file and recursive folder upload/download
+- Limits in `shared/transfer.ts`: max depth 10, max 500 files, 1 concurrent job
+- Drag-and-drop local files/folders onto remote explorer panel
+- Context menu upload/download for files and folders
+- Explorer list refresh after transfer complete
+- Transfer tab auto-opens on upload/download/retry
 
 ### Done when
 
-- Upload a deploy artifact and download a log file
-- Queue shows uploading / completed / failed with retry and cancel
+- ~~Upload a deploy artifact and download a log file~~ ✅
+- ~~Queue shows uploading / completed / failed with retry and cancel~~ ✅
 
 ---
 
@@ -471,15 +470,16 @@ Typed preload surface exposed as `window.kport`. Implementation status:
 | `fs.readFile` | ✅     |
 | `fs.writeFile`| ✅     |
 
-### Phase 4 — Transfer ⬜
+### Phase 4 — Transfer ✅
 
 | Method              | Status |
 | ------------------- | ------ |
-| `transfer.upload`   | ⬜     |
-| `transfer.download` | ⬜     |
-| `transfer.cancel`   | ⬜     |
-| `transfer.retry`    | ⬜     |
-| `transfer:progress` | ⬜     |
+| `transfer.upload`   | ✅     |
+| `transfer.download` | ✅     |
+| `transfer.cancel`   | ✅     |
+| `transfer.retry`    | ✅     |
+| `transfer:progress` | ✅     |
+| `files.getPathForFile` | ✅ (drag-drop) |
 
 ### Phase 6 — Terminal ✅
 
@@ -609,7 +609,7 @@ From [IDEA — Success Criteria](./IDEA.md#success-criteria).
 | --------- | ------ |
 | Connect to a server within seconds | ✅ |
 | Edit remote files | ✅ |
-| Upload deployments | ⬜ Phase 4 |
+| Upload deployments | ✅ |
 | View logs (terminal) | ✅ |
 | Restart services (terminal) | ✅ |
 | Troubleshoot production issues | 🟡 (terminal yes; transfer + file ops partial) |

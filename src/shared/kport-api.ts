@@ -81,6 +81,10 @@ export interface DialogApi {
   openDirectory: () => Promise<string | null>
 }
 
+export interface FilesApi {
+  getPathForFile: (file: File) => string
+}
+
 export interface KPortApi {
   ping: () => Promise<string>
   servers: ServersApi
@@ -90,6 +94,7 @@ export interface KPortApi {
   terminal: TerminalApi
   transfer: TransferApi
   dialog: DialogApi
+  files: FilesApi
 }
 
 declare global {

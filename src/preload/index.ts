@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { IPC_CHANNELS } from '../shared/ipc-channels'
 import type { KPortApi } from '../shared/kport-api'
 import type { ServerFormInput } from '../shared/server'
@@ -137,6 +137,9 @@ const api: KPortApi = {
   dialog: {
     openFile: () => ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_FILE),
     openDirectory: () => ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_DIRECTORY),
+  },
+  files: {
+    getPathForFile: (file: File) => webUtils.getPathForFile(file),
   },
 }
 

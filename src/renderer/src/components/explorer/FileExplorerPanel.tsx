@@ -18,6 +18,7 @@ import {
   IconRefresh,
   IconUpload,
 } from '@tabler/icons-react'
+import { useExplorerDropUpload } from '../../hooks/useExplorerDropUpload'
 import { useLocalRootPicker } from '../../hooks/useLocalRootPicker'
 import { useExplorerMutations } from '../../hooks/useExplorerMutations'
 import { useExplorerPathBar } from '../../hooks/useExplorerPathBar'
@@ -58,6 +59,14 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
   const pathBarDisabled = side === 'remote' && Boolean(listError)
   const { pickLocalRoot } = useLocalRootPicker()
   const { uploadSelectedOrPick, uploadLocalFile, downloadRemoteFile } = useTransferActions()
+  const { onDragOver, onDrop } = useExplorerDropUpload({
+    enabled: side === 'remote',
+    onUploadPaths: async (paths) => {
+      for (const path of paths) {
+        await uploadLocalFile(path)
+      }
+    },
+  })
   const { nameModal, saving, actions: mutationActions } = useExplorerMutations({
     side,
     currentPath,
@@ -76,7 +85,11 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
   })
 
   return (
-    <div className={classes.explorerPanelBody}>
+    <div
+      className={classes.explorerPanelBody}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       <PanelHeader
         title={title}
         accent={accent}

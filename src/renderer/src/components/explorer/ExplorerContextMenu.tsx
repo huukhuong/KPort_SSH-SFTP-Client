@@ -75,16 +75,22 @@ export function ExplorerContextMenu({
         danger
         onClick={() => run(() => onDelete(node))}
       />
-      {isLocal && node.type === 'file' && onUpload && (
+      {isLocal && onUpload && (
         <>
           <div className={classes.contextMenuDivider} />
-          <ContextItem label="Upload" onClick={() => run(() => onUpload(node))} />
+          <ContextItem
+            label={node.type === 'directory' ? 'Upload folder' : 'Upload'}
+            onClick={() => run(() => onUpload(node))}
+          />
         </>
       )}
-      {!isLocal && node.type === 'file' && onDownload && (
+      {!isLocal && onDownload && (
         <>
           <div className={classes.contextMenuDivider} />
-          <ContextItem label="Download" onClick={() => run(() => onDownload(node))} />
+          <ContextItem
+            label={node.type === 'directory' ? 'Download folder' : 'Download'}
+            onClick={() => run(() => onDownload(node))}
+          />
         </>
       )}
       <ContextItem
