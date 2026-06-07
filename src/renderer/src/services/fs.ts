@@ -33,3 +33,22 @@ export async function listLocalDirectory(path: string): Promise<FileTreeNode[]> 
   const entries = await getFsApi().list(path)
   return entries.map(toFileTreeNode)
 }
+
+export async function mkdirLocalDirectory(parentPath: string, name: string): Promise<string> {
+  return getFsApi().mkdir(parentPath, name)
+}
+
+export async function createLocalFile(parentPath: string, name: string): Promise<string> {
+  return getFsApi().createFile(parentPath, name)
+}
+
+export async function renameLocalEntry(fromPath: string, toPath: string): Promise<void> {
+  await getFsApi().rename(fromPath, toPath)
+}
+
+export async function deleteLocalEntry(
+  path: string,
+  type: 'file' | 'directory',
+): Promise<void> {
+  await getFsApi().delete(path, type)
+}

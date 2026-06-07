@@ -283,6 +283,45 @@ export function getFileName(path: string): string {
   return parts[parts.length - 1] ?? path
 }
 
+export function joinExplorerEntryPath(parentPath: string, name: string): string {
+  const trimmed = name.trim()
+  if (!trimmed) {
+    throw new Error('Name is required')
+  }
+
+  if (trimmed.includes('/') || trimmed.includes('\\')) {
+    throw new Error('Name cannot contain path separators')
+  }
+
+  if (/^[a-zA-Z]:\/$/.test(parentPath)) {
+    return `${parentPath}${trimmed}`
+  }
+
+  if (parentPath === '/') {
+    return `/${trimmed}`
+  }
+
+  return `${parentPath}/${trimmed}`
+}
+
+export function buildRenamedExplorerPath(
+  currentPath: string,
+  newName: string,
+  rootPath: string,
+): string {
+  const parent = getParentExplorerPath(currentPath, rootPath)
+  if (parent === null) {
+    if (/^[a-zA-Z]:\\?$/.test(currentPath) || /^[a-zA-Z]:\//.test(currentPath)) {
+      const drive = currentPath.slice(0, 2)
+      return `${drive}/${newName}`
+    }
+
+    return joinExplorerEntryPath('/', newName)
+  }
+
+  return joinExplorerEntryPath(parent, newName)
+}
+
 export function isZipFile(path: string): boolean {
   return /\.zip$/i.test(path)
 }

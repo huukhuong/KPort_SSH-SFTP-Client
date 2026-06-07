@@ -1,5 +1,6 @@
 import { Paper, UnstyledButton } from '@mantine/core'
 import { useClickOutside } from '@mantine/hooks'
+import { notifications } from '@mantine/notifications'
 import type { RefObject } from 'react'
 import type { FileTreeNode } from '../../types/fileTree'
 import { demoAction } from '../../utils/demoNotify'
@@ -17,6 +18,8 @@ interface ExplorerContextMenuProps {
   target: ExplorerContextTarget | null
   onClose: () => void
   onOpen: (node: FileTreeNode) => void
+  onRename: (node: FileTreeNode) => void
+  onDelete: (node: FileTreeNode) => void
   onOpenTerminalHere?: (path: string) => void
 }
 
@@ -25,6 +28,8 @@ export function ExplorerContextMenu({
   target,
   onClose,
   onOpen,
+  onRename,
+  onDelete,
   onOpenTerminalHere,
 }: ExplorerContextMenuProps) {
   const isLocal = side === 'local'
@@ -33,10 +38,9 @@ export function ExplorerContextMenu({
   if (!target) return null
 
   const { node } = target
-  const name = getFileName(node.path)
   const zipFile = node.type === 'file' && isZipFile(node.path)
 
-  const run = (label: string, action?: () => void) => {
+  const run = (action?: () => void) => {
     action?.()
     onClose()
   }
@@ -56,43 +60,46 @@ export function ExplorerContextMenu({
       {zipFile ? (
         <ContextItem
           label="Unzip"
-          onClick={() => run('Unzip', () => demoAction('Unzip', unzipDetail))}
+          onClick={() => run(() => demoAction('Unzip', unzipDetail))}
         />
       ) : (
-        <ContextItem label="Open" onClick={() => run('Open', () => onOpen(node))} />
+        <ContextItem label="Open" onClick={() => run(() => onOpen(node))} />
       )}
-      <ContextItem label="Rename" onClick={() => run('Rename', () => demoAction('Rename', `Rename ${name}`))} />
+      <ContextItem label="Rename" onClick={() => run(() => onRename(node))} />
       <ContextItem
         label="Delete"
         danger
-        onClick={() => run('Delete', () => demoAction('Delete', `Delete ${name}`))}
+        onClick={() => run(() => onDelete(node))}
       />
       <div className={classes.contextMenuDivider} />
       <ContextItem
         label="Upload"
         onClick={() =>
-          run(
-            'Upload',
-            () =>
-              demoAction(
-                'Upload',
-                isLocal ? `Upload ${node.path}` : `Upload to ${node.path}`,
-              ),
+          run(() =>
+            demoAction(
+              'Upload',
+              isLocal ? `Upload ${node.path}` : `Upload to ${node.path}`,
+            ),
           )
         }
       />
       {!isLocal && (
         <ContextItem
           label="Download"
-          onClick={() => run('Download', () => demoAction('Download', `Download ${node.path}`))}
+          onClick={() => run(() => demoAction('Download', `Download ${node.path}`))}
         />
       )}
       <ContextItem
         label="Copy Path"
         onClick={() =>
-          run('Copy Path', () => {
+          run(() => {
             void navigator.clipboard?.writeText(node.path)
-            demoAction('Copy Path', node.path)
+            notifications.show({
+              title: 'Path copied',
+              message: node.path,
+              color: 'green',
+              autoClose: 2000,
+            })
           })
         }
       />
@@ -101,7 +108,7 @@ export function ExplorerContextMenu({
           <div className={classes.contextMenuDivider} />
           <ContextItem
             label="Open Terminal Here"
-            onClick={() => run('Open Terminal Here', () => onOpenTerminalHere(node.path))}
+            onClick={() => run(() => onOpenTerminalHere(node.path))}
           />
         </>
       )}

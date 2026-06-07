@@ -9,13 +9,22 @@ import {
   Text,
 } from '@mantine/core'
 import { IconPlugConnected } from '@tabler/icons-react'
-import { IconArrowLeft, IconHome, IconRefresh, IconUpload } from '@tabler/icons-react'
+import {
+  IconArrowLeft,
+  IconFilePlus,
+  IconFolderPlus,
+  IconHome,
+  IconRefresh,
+  IconUpload,
+} from '@tabler/icons-react'
+import { useExplorerMutations } from '../../hooks/useExplorerMutations'
 import { useExplorerPathBar } from '../../hooks/useExplorerPathBar'
 import { useFileExplorer } from '../../hooks/useFileExplorer'
 import type { FileTreeNode } from '../../types/fileTree'
 import { PanelHeader } from '../layout/PanelHeader'
 import { ExplorerContextMenu } from './ExplorerContextMenu'
 import { ExplorerEntryIcon } from './ExplorerEntryIcon'
+import { ExplorerNameModal } from './ExplorerNameModal'
 import classes from '../../styles/layout.module.css'
 
 interface FileExplorerPanelProps {
@@ -28,7 +37,9 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
     accent,
     currentPath,
     homePath,
+    rootPath,
     serverId,
+    canMutate,
     atHome,
     atRoot,
     canGoUp,
@@ -42,6 +53,14 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
   } = useFileExplorer(side)
 
   const pathBarDisabled = side === 'remote' && Boolean(listError)
+  const { nameModal, saving, actions: mutationActions } = useExplorerMutations({
+    side,
+    currentPath,
+    rootPath,
+    serverId,
+    canMutate,
+    onRefresh: actions.refresh,
+  })
   const { pathInputProps, loadingSuggestions } = useExplorerPathBar({
     currentPath,
     homePath,
@@ -58,10 +77,54 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
         accent={accent}
         actions={
           <>
-            <ActionIcon variant="subtle" size="sm" aria-label="Refresh" onClick={actions.refresh}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              aria-label="Refresh"
+              title="Refresh listing"
+              onClick={actions.refresh}
+            >
               <IconRefresh size={14} />
             </ActionIcon>
-            <ActionIcon variant="subtle" size="sm" aria-label="Upload" onClick={actions.upload}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              aria-label="New file"
+              title={
+                canMutate
+                  ? 'New file in current folder'
+                  : side === 'remote'
+                    ? 'Connect to a server first'
+                    : 'Not available'
+              }
+              disabled={!canMutate}
+              onClick={mutationActions.startTouch}
+            >
+              <IconFilePlus size={14} />
+            </ActionIcon>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              aria-label="New folder"
+              title={
+                canMutate
+                  ? 'New folder in current folder'
+                  : side === 'remote'
+                    ? 'Connect to a server first'
+                    : 'Not available'
+              }
+              disabled={!canMutate}
+              onClick={mutationActions.startMkdir}
+            >
+              <IconFolderPlus size={14} />
+            </ActionIcon>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              aria-label="Upload"
+              title="Upload files (coming in Phase 4)"
+              onClick={actions.upload}
+            >
               <IconUpload size={14} />
             </ActionIcon>
           </>
@@ -147,14 +210,14 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
           )}
         {!loading &&
           entries.map((entry) => (
-          <TreeRow
-            key={entry.path}
-            node={entry}
-            active={selectedPath === entry.path}
-            onSelect={() => actions.select(entry.path)}
-            onOpen={() => actions.openNode(entry)}
-            onContextMenu={(event) => actions.openContextMenu(entry, event)}
-          />
+            <TreeRow
+              key={entry.path}
+              node={entry}
+              active={selectedPath === entry.path}
+              onSelect={() => actions.select(entry.path)}
+              onOpen={() => actions.openNode(entry)}
+              onContextMenu={(event) => actions.openContextMenu(entry, event)}
+            />
           ))}
       </ScrollArea>
 
@@ -163,7 +226,31 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
         target={contextMenu}
         onClose={actions.closeContextMenu}
         onOpen={actions.openNode}
+        onRename={mutationActions.startRename}
+        onDelete={mutationActions.deleteNode}
         onOpenTerminalHere={actions.openTerminalHere}
+      />
+
+      <ExplorerNameModal
+        opened={nameModal !== null}
+        title={
+          nameModal?.mode === 'mkdir'
+            ? 'New folder'
+            : nameModal?.mode === 'touch'
+              ? 'New file'
+              : 'Rename'
+        }
+        label={
+          nameModal?.mode === 'mkdir'
+            ? 'Folder name'
+            : nameModal?.mode === 'touch'
+              ? 'File name'
+              : 'New name'
+        }
+        initialName={nameModal?.initialName ?? ''}
+        saving={saving}
+        onClose={mutationActions.closeNameModal}
+        onSubmit={mutationActions.submitName}
       />
     </div>
   )

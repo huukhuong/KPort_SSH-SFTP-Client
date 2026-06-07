@@ -20,6 +20,10 @@ class DirectoryListingCache {
     this.entries.set(buildKey(serverId, path), entries)
   }
 
+  invalidate(serverId: string, path: string): void {
+    this.entries.delete(buildKey(serverId, path))
+  }
+
   clear(serverId: string): void {
     const prefix = `${serverId}:`
     for (const key of this.entries.keys()) {

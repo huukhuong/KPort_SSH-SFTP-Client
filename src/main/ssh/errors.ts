@@ -22,5 +22,17 @@ export function mapSshError(error: unknown): string {
     return 'SSH handshake failed'
   }
 
+  if (lower.includes('directory not empty') || lower.includes('not empty')) {
+    return 'Directory is not empty'
+  }
+
+  if (lower.includes('already exists') || lower.includes('file exists')) {
+    return 'A file or folder with that name already exists'
+  }
+
+  if (lower.includes('permission denied') || lower.includes('permission')) {
+    return 'Permission denied'
+  }
+
   return message
 }

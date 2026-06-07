@@ -33,6 +33,14 @@ const api: KPortApi = {
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_READ_FILE, serverId, path),
     writeFile: (serverId: string, path: string, content: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_WRITE_FILE, serverId, path, content),
+    mkdir: (serverId: string, parentPath: string, name: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SFTP_MKDIR, serverId, parentPath, name),
+    createFile: (serverId: string, parentPath: string, name: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SFTP_CREATE_FILE, serverId, parentPath, name),
+    rename: (serverId: string, fromPath: string, toPath: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SFTP_RENAME, serverId, fromPath, toPath),
+    delete: (serverId: string, path: string, type: 'file' | 'directory') =>
+      ipcRenderer.invoke(IPC_CHANNELS.SFTP_DELETE, serverId, path, type),
   },
   fs: {
     getPaths: () => ipcRenderer.invoke(IPC_CHANNELS.FS_GET_PATHS),
@@ -40,6 +48,14 @@ const api: KPortApi = {
     readFile: (path: string) => ipcRenderer.invoke(IPC_CHANNELS.FS_READ_FILE, path),
     writeFile: (path: string, content: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.FS_WRITE_FILE, path, content),
+    mkdir: (parentPath: string, name: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.FS_MKDIR, parentPath, name),
+    createFile: (parentPath: string, name: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.FS_CREATE_FILE, parentPath, name),
+    rename: (fromPath: string, toPath: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.FS_RENAME, fromPath, toPath),
+    delete: (path: string, type: 'file' | 'directory') =>
+      ipcRenderer.invoke(IPC_CHANNELS.FS_DELETE, path, type),
   },
   terminal: {
     create: (input: TerminalCreateInput) =>

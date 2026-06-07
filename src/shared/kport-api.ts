@@ -31,6 +31,10 @@ export interface SftpApi {
   list: (serverId: string, path: string) => Promise<RemoteFileEntry[]>
   readFile: (serverId: string, path: string) => Promise<string>
   writeFile: (serverId: string, path: string, content: string) => Promise<void>
+  mkdir: (serverId: string, parentPath: string, name: string) => Promise<string>
+  createFile: (serverId: string, parentPath: string, name: string) => Promise<string>
+  rename: (serverId: string, fromPath: string, toPath: string) => Promise<void>
+  delete: (serverId: string, path: string, type: 'file' | 'directory') => Promise<void>
 }
 
 export interface FsApi {
@@ -38,6 +42,10 @@ export interface FsApi {
   list: (path: string) => Promise<LocalFileEntry[]>
   readFile: (path: string) => Promise<string>
   writeFile: (path: string, content: string) => Promise<void>
+  mkdir: (parentPath: string, name: string) => Promise<string>
+  createFile: (parentPath: string, name: string) => Promise<string>
+  rename: (fromPath: string, toPath: string) => Promise<void>
+  delete: (path: string, type: 'file' | 'directory') => Promise<void>
 }
 
 export interface TerminalApi {
