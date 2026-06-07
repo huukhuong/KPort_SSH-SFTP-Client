@@ -15,8 +15,15 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderProps) {
-  const { serverName, connectionLabel, connectionStatusColor, isConnected, metrics, metricsLoading } =
-    useAppHeader()
+  const {
+    serverName,
+    connectionLabel,
+    connectionStatusColor,
+    isConnected,
+    metrics,
+    metricsLoading,
+    warnings,
+  } = useAppHeader()
 
   return (
     <Group h="100%" px="md" justify="space-between" wrap="nowrap">
@@ -50,6 +57,7 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
           label="CPU"
           value={formatMetricValue(isConnected, metrics?.cpuPercent, (value) => `${value}%`)}
           loading={metricsLoading && !metrics}
+          warning={Boolean(warnings?.cpu)}
         />
         <MetricBadge
           icon={<IconDeviceSdCard size={12} />}
@@ -60,6 +68,7 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
             (value) => `${value.ramUsedGb} / ${value.ramTotalGb} GB`,
           )}
           loading={metricsLoading && !metrics}
+          warning={Boolean(warnings?.ram)}
         />
         {isConnected && metrics && metrics.disks.length > 0
           ? metrics.disks.map((disk) => (
@@ -68,6 +77,7 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
                 icon={<IconDatabase size={12} />}
                 label={formatDiskLabel(disk.mount)}
                 value={`${disk.usedGb} / ${disk.totalGb} GB`}
+                warning={Boolean(warnings?.disks[disk.mount])}
               />
             ))
           : (
@@ -83,6 +93,7 @@ export function AppHeader({ onToggleSidebar, sidebarOpened = true }: AppHeaderPr
           label="Load"
           value={formatMetricValue(isConnected, metrics?.loadAverage, (value) => `${value}`)}
           loading={metricsLoading && !metrics}
+          warning={Boolean(warnings?.load)}
         />
       </Group>
     </Group>
@@ -108,17 +119,20 @@ function MetricBadge({
   label,
   value,
   loading = false,
+  warning = false,
 }: {
   icon: React.ReactNode
   label: string
   value: string
   loading?: boolean
+  warning?: boolean
 }) {
   return (
     <Badge
       variant="light"
-      color="gray"
+      color={warning ? 'red' : 'gray'}
       leftSection={icon}
+      title={warning ? `${label} above warning threshold` : undefined}
       styles={{ root: { textTransform: 'none', fontWeight: 500, opacity: loading ? 0.7 : 1 } }}
     >
       {label}: {value}

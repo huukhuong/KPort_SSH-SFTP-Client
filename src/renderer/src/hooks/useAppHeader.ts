@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { METRICS_POLL_INTERVAL_MS } from '../../../shared/metrics'
-import type { ServerMetrics } from '../../../shared/metrics'
+import {
+  getMetricWarnings,
+  METRICS_POLL_INTERVAL_MS,
+  type MetricWarnings,
+  type ServerMetrics,
+} from '../../../shared/metrics'
 import { getServerMetrics } from '../services/metrics'
 import { useServerStore } from '../stores/serverStore'
 import type { ServerStatus } from '../types'
@@ -72,6 +76,8 @@ export function useAppHeader() {
     }
   }, [activeServerId, isConnected, refreshMetrics])
 
+  const warnings: MetricWarnings | null = metrics ? getMetricWarnings(metrics) : null
+
   return {
     serverName: activeServer?.name ?? 'No server selected',
     connectionLabel,
@@ -79,5 +85,6 @@ export function useAppHeader() {
     isConnected,
     metrics,
     metricsLoading,
+    warnings,
   }
 }

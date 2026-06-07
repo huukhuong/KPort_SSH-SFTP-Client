@@ -21,7 +21,7 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 | 5 Editor | ✅ Done | Monaco open/save local + remote |
 | 6 Terminal | ✅ Done | xterm + `ssh2` shell, multi-tab, Open Terminal Here |
 | 7 Productivity | ✅ Done | SQLite favorites + quick cmds + remote file search |
-| 8 Monitoring | 🟡 Partial | Live metrics polling; threshold warnings not wired |
+| 8 Monitoring | ✅ Done | Live metrics polling + threshold warning badges |
 | 9 Future | ⬜ Backlog | Packaging, keychain, Docker, etc. |
 
 **Also shipped (not a PLAN phase):** app branding (`KPort: SSH & SFTP Client`), icon pipeline (`scripts/generate-app-icon.js`), macOS dev Dock shell (`scripts/prepare-electron-shell.js`).
@@ -111,7 +111,7 @@ kport/
 | 5     | Code Editor       | ✅     | Monaco tabs              | readFile / writeFile        | Part of IDEA Phase 2                                  |
 | 6     | SSH Terminal      | ✅     | xterm multi-tab          | `ssh2` shell stream         | Part of IDEA Phase 2                                  |
 | 7     | Productivity      | ✅     | Favorites, quick cmds UI | SQLite + search + favorites | IDEA Phase 3                                          |
-| 8     | Monitoring        | 🟡     | Header badges            | SSH exec polling            | IDEA Phase 4                                          |
+| 8     | Monitoring        | ✅     | Header badges            | SSH exec polling + warnings | IDEA Phase 4                                          |
 | 9     | Future            | ⬜     | —                        | Backlog                     | IDEA Phase 4 + Future Features                        |
 
 ### IDEA roadmap cross-reference
@@ -392,26 +392,27 @@ sequenceDiagram
 
 ## Phase 8 — Monitoring + Health Warnings
 
-**Status:** 🟡 Partial — live metrics yes; threshold warnings no
+**Status:** ✅ Done
 
 **Goal:** Live server metrics in header; threshold warnings.
 
 ### Done
 
-- Poll every 5s while connected (`METRICS_POLL_INTERVAL_MS`)
+- Poll every 3s while connected (`METRICS_POLL_INTERVAL_MS`)
 - Linux parsers via SSH exec (`src/main/ssh/metrics.ts`)
 - IPC: `ssh.getMetrics` → header badges (CPU, RAM, disk per mount, load)
 - Disk mounts filtered (> 5 GB)
+- Threshold warnings in `shared/metrics.ts`: CPU ≥ 90%, RAM ≥ 85%, disk ≥ 90%, load ≥ 4
+- Header badges turn red when thresholds exceeded
 
-### Remaining
+### Backlog
 
 - Push model: `metrics.subscribe` / `metrics:update` events (optional; invoke polling works today)
-- Threshold warnings: CPU > 90%, RAM > 85%, Disk > 90%, high load
 
 ### Done when
 
 - ~~Header reflects real server stats~~ ✅
-- Warning badges appear when thresholds exceeded ⬜
+- ~~Warning badges appear when thresholds exceeded~~ ✅
 
 ---
 
