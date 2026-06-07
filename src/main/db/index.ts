@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import { app } from 'electron'
 import { join } from 'path'
+import { migratePlaintextCredentials } from './credential-migration'
 
 let db: Database.Database | null = null
 
@@ -45,6 +46,7 @@ export function getDatabase(): Database.Database {
   db.pragma('journal_mode = WAL')
   db.exec(MIGRATION_SQL)
   seedDefaultQuickCommands(db)
+  migratePlaintextCredentials()
 
   return db
 }

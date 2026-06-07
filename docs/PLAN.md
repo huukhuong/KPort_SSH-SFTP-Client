@@ -22,14 +22,13 @@ MVP core loop works on a real server: **connect → browse (local + remote) → 
 | 6 Terminal | ✅ Done | xterm + `ssh2` shell, multi-tab, Open Terminal Here |
 | 7 Productivity | ✅ Done | SQLite favorites + quick cmds + remote file search |
 | 8 Monitoring | ✅ Done | Live metrics polling + threshold warning badges |
-| 9 Future | ⬜ Backlog | Packaging, keychain, Docker, etc. |
+| 9 Future | 🟡 Partial | CI release + credential encryption + signing docs |
 
 **Also shipped (not a PLAN phase):** app branding (`KPort: SSH & SFTP Client`), icon pipeline (`scripts/generate-app-icon.js`), macOS dev Dock shell (`scripts/prepare-electron-shell.js`).
 
 ### Next up (recommended order)
 
-1. **Phase 8** — CPU/RAM/disk threshold warnings in header
-2. **Phase 9** — Credential encryption + release signing docs
+1. **Phase 9 backlog** — Code signing secrets in CI, Docker, log presets
 3. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 4. **Phase 8 polish** — CPU/RAM/disk threshold warnings in header
 5. **Phase 9** — Code signing / notarization + credential hardening
@@ -133,7 +132,7 @@ kport/
 4. ~~**Phase 6** — terminal~~ ✅
 5. ~~**Phase 4** — transfer queue~~ ✅
 6. ~~**Phase 7** — favorites, quick cmds, search~~ ✅
-7. **Phase 8 + 9** — health warnings + security ← **next**
+7. ~~**Phase 8 + 9 (core)** — health warnings + credential encryption~~ ✅
 7. **Phase 9** — packaging + security
 
 ---
@@ -418,14 +417,15 @@ sequenceDiagram
 
 ## Phase 9 — Future (backlog)
 
-**Status:** ⬜ Not started (except dev tooling below)
+**Status:** 🟡 Partial — release pipeline + credential encryption shipped
 
 Does not block daily dev use. Items from [IDEA — Future Features](./IDEA.md#future-features):
 
 | Item | Status |
 | ---- | ------ |
 | `electron-builder` + GitHub Actions release on `main` | ✅ `.github/workflows/release.yml` |
-| Credential keychain / encrypt-at-rest | ⬜ (passwords plaintext in SQLite today) |
+| Credential encrypt-at-rest | ✅ Electron `safeStorage` + startup migration (`src/main/security/credentials.ts`) |
+| Release signing guide | ✅ `docs/SIGNING.md` (secrets not configured in CI yet) |
 | App icon + macOS dev Dock branding | ✅ `scripts/generate-app-icon.js`, `prepare-electron-shell.js` |
 | `yarn preview` custom Electron shell | ⬜ (still `electron-vite preview` direct; see dev script pattern) |
 | Docker integration (CLI wrapper) | ⬜ |
@@ -621,7 +621,7 @@ From [IDEA — Success Criteria](./IDEA.md#success-criteria).
 | Upload deployments | ✅ |
 | View logs (terminal) | ✅ |
 | Restart services (terminal) | ✅ |
-| Troubleshoot production issues | 🟡 (terminal yes; transfer + file ops partial) |
+| Troubleshoot production issues | ✅ |
 
-**MVP bar:** Phases 0–6 minimum → **met** except full file-ops + upload/download.  
-**Ship bar:** add Phase 4 + Phase 3 mutations + `electron-builder`.
+**MVP bar:** Phases 0–8 minimum → **met**.  
+**Ship bar:** add code-signing secrets in CI before public distribution.

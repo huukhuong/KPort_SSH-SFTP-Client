@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import type { ServerFormInput, ServerRecord } from '../../shared/server'
+import { decryptCredential, encryptCredential } from '../security/credentials'
 import { getDatabase } from './index'
 
 interface ServerRow {
@@ -75,8 +76,8 @@ export function createServer(input: ServerFormInput): ServerRecord {
     input.port,
     input.username.trim(),
     input.authType,
-    password,
-    privateKey,
+    encryptCredential(password),
+    encryptCredential(privateKey),
     createdAt,
   )
 
@@ -103,8 +104,8 @@ export function updateServer(id: string, input: ServerFormInput): ServerRecord {
   }
 
   const { password, privateKey } = resolveCredentials(input, {
-    password: existing.password_encrypted,
-    privateKey: existing.private_key_path,
+    password: decryptCredential(existing.password_encrypted),
+    privateKey: decryptCredential(existing.private_key_path),
   })
 
   db.prepare(
@@ -117,8 +118,8 @@ export function updateServer(id: string, input: ServerFormInput): ServerRecord {
     input.port,
     input.username.trim(),
     input.authType,
-    password,
-    privateKey,
+    encryptCredential(password),
+    encryptCredential(privateKey),
     id,
   )
 
@@ -180,8 +181,8 @@ export function getServerCredentials(id: string): ServerCredentials {
     port: row.port,
     username: row.username,
     authType: row.auth_type as ServerCredentials['authType'],
-    password: row.password_encrypted,
-    privateKey: row.private_key_path,
+    password: decryptCredential(row.password_encrypted),
+    privateKey: decryptCredential(row.private_key_path),
   }
 }
 

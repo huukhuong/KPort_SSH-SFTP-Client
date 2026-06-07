@@ -57,7 +57,7 @@ jobs:
       - name: Package installers
         run: yarn electron-builder --${{ matrix.platform }} --publish never
         env:
-          # CI has no code-signing certs; produce unsigned installers.
+          # Unsigned builds until signing secrets are configured — see docs/SIGNING.md
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Upload artifacts
