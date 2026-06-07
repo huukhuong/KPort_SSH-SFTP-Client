@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { BOTTOM_HEADER_HEIGHT } from '../../constants/layout'
 import { useServerModal } from '../../hooks/useServerModal'
+import { registerBottomPanelExpand } from '../../stores/bottomPanelStore'
 import { useWorkspaceVisibility } from '../../hooks/useWorkspaceVisibility'
 import { useSidebarResize } from '../../hooks/useSidebarResize'
 import { useWorkspaceResize } from '../../hooks/useWorkspaceResize'
@@ -9,6 +11,7 @@ import { EditorPanel } from '../editor/EditorPanel'
 import { ServerFormModal } from '../server/ServerFormModal'
 import { AppSidebar } from '../sidebar/AppSidebar'
 import { AppHeader } from './AppHeader'
+import { TransferEventBridge } from '../transfer/TransferEventBridge'
 import { BottomPanel } from './BottomPanel'
 import classes from '../../styles/layout.module.css'
 
@@ -50,8 +53,17 @@ export function AppLayout() {
       }
     : undefined
 
+  useEffect(() => {
+    return registerBottomPanelExpand(() => {
+      if (bottomCollapsed) {
+        toggleBottomPanel()
+      }
+    })
+  }, [bottomCollapsed, toggleBottomPanel])
+
   return (
     <TerminalProvider>
+      <TransferEventBridge />
       <div className={classes.shell}>
         <header className={classes.appHeader}>
           <AppHeader onToggleSidebar={toggleSidebar} sidebarOpened={sidebarOpen} />

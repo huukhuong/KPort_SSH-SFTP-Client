@@ -41,6 +41,7 @@ export type TransferStatus = 'queued' | 'active' | 'completed' | 'failed' | 'can
 
 export interface TransferJob {
   id: string
+  serverId: string
   direction: 'upload' | 'download'
   localPath: string
   remotePath: string

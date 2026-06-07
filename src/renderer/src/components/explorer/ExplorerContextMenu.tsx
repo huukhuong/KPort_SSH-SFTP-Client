@@ -20,6 +20,8 @@ interface ExplorerContextMenuProps {
   onOpen: (node: FileTreeNode) => void
   onRename: (node: FileTreeNode) => void
   onDelete: (node: FileTreeNode) => void
+  onUpload?: (node: FileTreeNode) => void
+  onDownload?: (node: FileTreeNode) => void
   onOpenTerminalHere?: (path: string) => void
 }
 
@@ -30,6 +32,8 @@ export function ExplorerContextMenu({
   onOpen,
   onRename,
   onDelete,
+  onUpload,
+  onDownload,
   onOpenTerminalHere,
 }: ExplorerContextMenuProps) {
   const isLocal = side === 'local'
@@ -71,23 +75,17 @@ export function ExplorerContextMenu({
         danger
         onClick={() => run(() => onDelete(node))}
       />
-      <div className={classes.contextMenuDivider} />
-      <ContextItem
-        label="Upload"
-        onClick={() =>
-          run(() =>
-            demoAction(
-              'Upload',
-              isLocal ? `Upload ${node.path}` : `Upload to ${node.path}`,
-            ),
-          )
-        }
-      />
-      {!isLocal && (
-        <ContextItem
-          label="Download"
-          onClick={() => run(() => demoAction('Download', `Download ${node.path}`))}
-        />
+      {isLocal && node.type === 'file' && onUpload && (
+        <>
+          <div className={classes.contextMenuDivider} />
+          <ContextItem label="Upload" onClick={() => run(() => onUpload(node))} />
+        </>
+      )}
+      {!isLocal && node.type === 'file' && onDownload && (
+        <>
+          <div className={classes.contextMenuDivider} />
+          <ContextItem label="Download" onClick={() => run(() => onDownload(node))} />
+        </>
       )}
       <ContextItem
         label="Copy Path"

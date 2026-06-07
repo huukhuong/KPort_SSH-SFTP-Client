@@ -43,6 +43,9 @@ export function useFileExplorer(side: 'local' | 'remote') {
     isLocal ? state.navigateLocal : state.navigateRemote,
   )
   const select = useExplorerStore((state) => (isLocal ? state.selectLocal : state.selectRemote))
+  const listingRefreshToken = useExplorerStore((state) =>
+    isLocal ? state.localListingRefreshToken : state.remoteListingRefreshToken,
+  )
 
   const isConnected = activeServer?.status === 'connected'
   const isConnecting = activeServer?.status === 'connecting'
@@ -178,6 +181,7 @@ export function useFileExplorer(side: 'local' | 'remote') {
     isConnecting,
     currentPath,
     refreshKey,
+    listingRefreshToken,
     activeServer?.status,
   ])
 
@@ -230,11 +234,6 @@ export function useFileExplorer(side: 'local' | 'remote') {
     setRefreshKey((key) => key + 1)
   }, [cacheScope, currentPath])
 
-  const upload = useCallback(
-    () => demoAction('Upload', `Upload to ${currentPath}`),
-    [currentPath],
-  )
-
   const navigateRoot = useCallback(() => navigate(rootPath), [navigate, rootPath])
 
   const navigateHome = useCallback(() => navigate(homePath), [navigate, homePath])
@@ -266,7 +265,6 @@ export function useFileExplorer(side: 'local' | 'remote') {
       openContextMenu,
       closeContextMenu,
       refresh,
-      upload,
       navigateRoot,
       navigateHome,
       navigateUp,

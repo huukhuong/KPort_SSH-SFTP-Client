@@ -20,6 +20,7 @@ import {
 import { useExplorerMutations } from '../../hooks/useExplorerMutations'
 import { useExplorerPathBar } from '../../hooks/useExplorerPathBar'
 import { useFileExplorer } from '../../hooks/useFileExplorer'
+import { useTransferActions } from '../../hooks/useTransferActions'
 import type { FileTreeNode } from '../../types/fileTree'
 import { PanelHeader } from '../layout/PanelHeader'
 import { ExplorerContextMenu } from './ExplorerContextMenu'
@@ -53,6 +54,7 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
   } = useFileExplorer(side)
 
   const pathBarDisabled = side === 'remote' && Boolean(listError)
+  const { uploadSelectedOrPick, uploadLocalFile, downloadRemoteFile } = useTransferActions()
   const { nameModal, saving, actions: mutationActions } = useExplorerMutations({
     side,
     currentPath,
@@ -122,8 +124,17 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
               variant="subtle"
               size="sm"
               aria-label="Upload"
-              title="Upload files (coming in Phase 4)"
-              onClick={actions.upload}
+              title={
+                side === 'local'
+                  ? 'Upload file to remote folder'
+                  : 'Switch to local panel to upload files'
+              }
+              disabled={side !== 'local'}
+              onClick={() => {
+                if (side === 'local') {
+                  void uploadSelectedOrPick(selectedPath, entries)
+                }
+              }}
             >
               <IconUpload size={14} />
             </ActionIcon>
@@ -228,6 +239,8 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
         onOpen={actions.openNode}
         onRename={mutationActions.startRename}
         onDelete={mutationActions.deleteNode}
+        onUpload={side === 'local' ? (node) => void uploadLocalFile(node.path) : undefined}
+        onDownload={side === 'remote' ? (node) => void downloadRemoteFile(node.path) : undefined}
         onOpenTerminalHere={actions.openTerminalHere}
       />
 

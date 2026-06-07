@@ -1,11 +1,9 @@
 import { ActionIcon } from '@mantine/core'
 import { IconChevronDown, IconChevronUp, IconList, IconTerminal2 } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useBottomPanelStore } from '../../stores/bottomPanelStore'
 import { TerminalPanel } from '../terminal/TerminalPanel'
 import { TransferQueuePanel } from '../transfer/TransferQueuePanel'
 import classes from '../../styles/layout.module.css'
-
-type BottomTab = 'terminal' | 'transfers'
 
 interface BottomPanelProps {
   onToggle: () => void
@@ -13,7 +11,8 @@ interface BottomPanelProps {
 }
 
 export function BottomPanel({ onToggle, collapsed = false }: BottomPanelProps) {
-  const [activeTab, setActiveTab] = useState<BottomTab>('terminal')
+  const activeTab = useBottomPanelStore((state) => state.activeTab)
+  const setActiveTab = useBottomPanelStore((state) => state.setActiveTab)
 
   return (
     <div
@@ -53,9 +52,7 @@ export function BottomPanel({ onToggle, collapsed = false }: BottomPanelProps) {
           {activeTab === 'terminal' ? (
             <TerminalPanel />
           ) : (
-            <div className={classes.transferPanelRoot}>
-              <TransferQueuePanel />
-            </div>
+            <TransferQueuePanel />
           )}
         </div>
       )}

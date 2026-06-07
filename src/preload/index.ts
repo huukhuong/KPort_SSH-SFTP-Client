@@ -8,6 +8,13 @@ import type {
   TerminalExitEvent,
   TerminalResizeInput,
 } from '../shared/terminal'
+import type {
+  TransferDirection,
+  TransferFailedEvent,
+  TransferJobInput,
+  TransferProgressEvent,
+  TransferStateEvent,
+} from '../shared/transfer'
 
 const api: KPortApi = {
   ping: () => Promise.resolve('pong'),
@@ -83,6 +90,52 @@ const api: KPortApi = {
         ipcRenderer.removeListener(IPC_CHANNELS.TERMINAL_EXIT, listener)
       }
     },
+  },
+  transfer: {
+    upload: (input: TransferJobInput) => ipcRenderer.invoke(IPC_CHANNELS.TRANSFER_UPLOAD, input),
+    download: (input: TransferJobInput) =>
+      ipcRenderer.invoke(IPC_CHANNELS.TRANSFER_DOWNLOAD, input),
+    cancel: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.TRANSFER_CANCEL, id),
+    retry: (input: TransferJobInput, direction: TransferDirection) =>
+      ipcRenderer.invoke(IPC_CHANNELS.TRANSFER_RETRY, input, direction),
+    onStarted: (callback: (event: TransferStateEvent) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: TransferStateEvent) => {
+        callback(payload)
+      }
+      ipcRenderer.on(IPC_CHANNELS.TRANSFER_STARTED, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.TRANSFER_STARTED, listener)
+    },
+    onProgress: (callback: (event: TransferProgressEvent) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: TransferProgressEvent) => {
+        callback(payload)
+      }
+      ipcRenderer.on(IPC_CHANNELS.TRANSFER_PROGRESS, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.TRANSFER_PROGRESS, listener)
+    },
+    onComplete: (callback: (event: TransferStateEvent) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: TransferStateEvent) => {
+        callback(payload)
+      }
+      ipcRenderer.on(IPC_CHANNELS.TRANSFER_COMPLETE, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.TRANSFER_COMPLETE, listener)
+    },
+    onFailed: (callback: (event: TransferFailedEvent) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: TransferFailedEvent) => {
+        callback(payload)
+      }
+      ipcRenderer.on(IPC_CHANNELS.TRANSFER_FAILED, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.TRANSFER_FAILED, listener)
+    },
+    onCancelled: (callback: (event: TransferStateEvent) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: TransferStateEvent) => {
+        callback(payload)
+      }
+      ipcRenderer.on(IPC_CHANNELS.TRANSFER_CANCELLED, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.TRANSFER_CANCELLED, listener)
+    },
+  },
+  dialog: {
+    openFile: () => ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_FILE),
   },
 }
 

@@ -1,21 +1,25 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTransferStore } from '../stores/transferStore'
 
 export function useTransferQueue() {
   const transfers = useTransferStore((state) => state.transfers)
-  const tickProgress = useTransferStore((state) => state.tickProgress)
-
-  useEffect(() => {
-    const timer = window.setInterval(() => tickProgress(), 700)
-    return () => window.clearInterval(timer)
-  }, [tickProgress])
 
   const uploading = useMemo(
-    () => transfers.filter((job) => job.direction === 'upload' && job.status === 'active'),
+    () =>
+      transfers.filter(
+        (job) =>
+          job.direction === 'upload' &&
+          (job.status === 'active' || job.status === 'queued'),
+      ),
     [transfers],
   )
   const downloading = useMemo(
-    () => transfers.filter((job) => job.direction === 'download' && job.status === 'active'),
+    () =>
+      transfers.filter(
+        (job) =>
+          job.direction === 'download' &&
+          (job.status === 'active' || job.status === 'queued'),
+      ),
     [transfers],
   )
   const completed = useMemo(

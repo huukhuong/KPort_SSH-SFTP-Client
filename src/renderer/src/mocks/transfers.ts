@@ -3,6 +3,7 @@ import type { TransferJob } from '../types'
 export const mockTransfers: TransferJob[] = [
   {
     id: 't1',
+    serverId: 'mock-server',
     direction: 'upload',
     localPath: '/Users/dev/deploy.zip',
     remotePath: '/var/www/api/deploy.zip',
@@ -11,6 +12,7 @@ export const mockTransfers: TransferJob[] = [
   },
   {
     id: 't2',
+    serverId: 'mock-server',
     direction: 'download',
     localPath: '/Users/dev/logs/app.log',
     remotePath: '/var/log/app.log',
@@ -19,6 +21,7 @@ export const mockTransfers: TransferJob[] = [
   },
   {
     id: 't4',
+    serverId: 'mock-server',
     direction: 'download',
     localPath: '/Users/dev/logs/nginx.log',
     remotePath: '/var/log/nginx/access.log',
@@ -27,6 +30,7 @@ export const mockTransfers: TransferJob[] = [
   },
   {
     id: 't3',
+    serverId: 'mock-server',
     direction: 'upload',
     localPath: '/Users/dev/config.yml',
     remotePath: '/etc/app/config.yml',

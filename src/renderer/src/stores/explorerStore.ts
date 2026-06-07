@@ -17,6 +17,10 @@ interface ExplorerStore {
   setRemoteHome: (path: string) => void
   selectLocal: (path: string | null) => void
   selectRemote: (path: string | null) => void
+  localListingRefreshToken: number
+  remoteListingRefreshToken: number
+  bumpLocalListingRefresh: () => void
+  bumpRemoteListingRefresh: () => void
 }
 
 export const useExplorerStore = create<ExplorerStore>((set) => ({
@@ -52,6 +56,12 @@ export const useExplorerStore = create<ExplorerStore>((set) => ({
   setRemoteHome: (path) => set({ remoteHomePath: path }),
   selectLocal: (path) => set({ selectedLocalPath: path }),
   selectRemote: (path) => set({ selectedRemotePath: path }),
+  localListingRefreshToken: 0,
+  remoteListingRefreshToken: 0,
+  bumpLocalListingRefresh: () =>
+    set((state) => ({ localListingRefreshToken: state.localListingRefreshToken + 1 })),
+  bumpRemoteListingRefresh: () =>
+    set((state) => ({ remoteListingRefreshToken: state.remoteListingRefreshToken + 1 })),
 }))
 
 export { mockLocalFilesystemRoot, mockRemoteFilesystemRoot }

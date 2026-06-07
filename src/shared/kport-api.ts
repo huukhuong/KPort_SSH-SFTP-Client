@@ -10,6 +10,13 @@ import type {
   TerminalExitEvent,
   TerminalResizeInput,
 } from './terminal'
+import type {
+  TransferDirection,
+  TransferFailedEvent,
+  TransferJobInput,
+  TransferProgressEvent,
+  TransferStateEvent,
+} from './transfer'
 
 export interface ServersApi {
   list: () => Promise<ServerRecord[]>
@@ -57,6 +64,22 @@ export interface TerminalApi {
   onExit: (callback: (event: TerminalExitEvent) => void) => () => void
 }
 
+export interface TransferApi {
+  upload: (input: TransferJobInput) => Promise<{ accepted: boolean }>
+  download: (input: TransferJobInput) => Promise<{ accepted: boolean }>
+  cancel: (id: string) => Promise<{ accepted: boolean }>
+  retry: (input: TransferJobInput, direction: TransferDirection) => Promise<{ accepted: boolean }>
+  onStarted: (callback: (event: TransferStateEvent) => void) => () => void
+  onProgress: (callback: (event: TransferProgressEvent) => void) => () => void
+  onComplete: (callback: (event: TransferStateEvent) => void) => () => void
+  onFailed: (callback: (event: TransferFailedEvent) => void) => () => void
+  onCancelled: (callback: (event: TransferStateEvent) => void) => () => void
+}
+
+export interface DialogApi {
+  openFile: () => Promise<string | null>
+}
+
 export interface KPortApi {
   ping: () => Promise<string>
   servers: ServersApi
@@ -64,6 +87,8 @@ export interface KPortApi {
   sftp: SftpApi
   fs: FsApi
   terminal: TerminalApi
+  transfer: TransferApi
+  dialog: DialogApi
 }
 
 declare global {
