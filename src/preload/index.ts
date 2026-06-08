@@ -53,6 +53,8 @@ const api: KPortApi = {
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_RENAME, serverId, fromPath, toPath),
     delete: (serverId: string, path: string, type: 'file' | 'directory') =>
       ipcRenderer.invoke(IPC_CHANNELS.SFTP_DELETE, serverId, path, type),
+    unzip: (serverId: string, zipPath: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SFTP_UNZIP, serverId, zipPath),
   },
   fs: {
     getPaths: () => ipcRenderer.invoke(IPC_CHANNELS.FS_GET_PATHS),

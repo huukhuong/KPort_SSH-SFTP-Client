@@ -13,6 +13,7 @@ import {
 import { readRemoteFile } from '../sftp/read'
 import { writeRemoteFile } from '../sftp/write'
 import { getRemoteParent, joinRemotePath } from '../sftp/paths'
+import { unzipRemoteArchive } from '../sftp/unzip-remote'
 
 export function registerSftpIpcHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.SFTP_LIST, (_event, serverId: string, path: string) =>
@@ -115,5 +116,13 @@ export function registerSftpIpcHandlers(): void {
         .catch((error) => {
           throw new Error(mapSshError(error))
         }),
+  )
+
+  ipcMain.handle(IPC_CHANNELS.SFTP_UNZIP, (_event, serverId: string, zipPath: string) =>
+    Promise.resolve()
+      .then(() => unzipRemoteArchive(serverId, zipPath))
+      .catch((error) => {
+        throw new Error(mapSshError(error))
+      }),
   )
 }

@@ -288,6 +288,11 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
         onDownload={side === 'remote' ? (node) => void downloadRemoteFile(node.path) : undefined}
         onOpenTerminalHere={actions.openTerminalHere}
         onAddFavorite={(node) => void addFavorite(node.path, node.name)}
+        onUnzip={
+          side === 'remote' && actions.unzipRemote
+            ? (node) => void actions.unzipRemote?.(node.path)
+            : undefined
+        }
       />
 
       <RemoteSearchModal
