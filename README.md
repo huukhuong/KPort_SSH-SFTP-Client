@@ -2,7 +2,11 @@
 
 A cross-platform desktop client for developers who manage remote servers daily. KPort combines SSH connectivity, SFTP file browsing, and in-app editing in a single workspace—so you spend less time switching between WinSCP, terminals, and editors.
 
-> **Status:** Early development (`v0.1.0`). Core SSH/SFTP flows are wired; packaging and several productivity features are still in progress.
+> **Status:** `v0.1.0` — MVP ready. Connect, browse, edit, transfer, terminal, and monitoring in one app.
+
+![KPort workspace — dual explorer, Monaco editor, SSH terminal, and live server metrics](./docs/screenshots/hero-workspace.png)
+
+*Browse local and remote files, edit on the server, run commands, and monitor CPU/RAM/disk — without leaving the app.*
 
 ## Features
 
@@ -12,11 +16,12 @@ A cross-platform desktop client for developers who manage remote servers daily. 
 | SSH connect & connection test | Done |
 | Dual file explorer (local + remote SFTP) | Done |
 | Path bar with autocomplete & `cd ..` navigation | Done |
+| File ops (mkdir, rename, delete) local + remote | Done |
+| Upload/download + folder transfer + queue | Done |
 | Monaco editor — open & save local/remote files | Done |
-| Server metrics in header (CPU, RAM, disk, load) | Done |
-| SSH terminal (xterm) | Done |
-| File transfer queue | UI shell — backend in progress |
-| Favorites & quick commands | UI shell — backend in progress |
+| SSH terminal (xterm, multi-tab) | Done |
+| Favorites, quick commands, remote file search | Done |
+| Server metrics + threshold warnings in header | Done |
 | Installer (`.dmg` / `.exe` / `.AppImage`) | CI release on push to `main` |
 
 ## Tech stack
@@ -111,9 +116,9 @@ kport/
 │           ├── components/ # UI panels & layout
 │           ├── hooks/      # Feature hooks
 │           ├── services/   # IPC clients (ssh, sftp, fs, …)
-│           ├── stores/     # Zustand stores
-│           └── mocks/      # Demo data for unfinished UI areas
+│           └── stores/     # Zustand stores
 ├── docs/
+│   ├── screenshots/        # README & marketing images
 │   ├── IDEA.md             # Product vision & MVP scope
 │   └── PLAN.md             # UI-first development roadmap
 └── electron.vite.config.ts
