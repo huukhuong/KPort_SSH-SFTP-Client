@@ -46,7 +46,7 @@ export function getDatabase(): Database.Database {
   db.pragma('journal_mode = WAL')
   db.exec(MIGRATION_SQL)
   seedDefaultQuickCommands(db)
-  migratePlaintextCredentials()
+  migratePlaintextCredentials(db)
 
   return db
 }

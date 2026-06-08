@@ -1,86 +1,36 @@
-import { notifications } from '@mantine/notifications'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { FavoriteDirectoryRecord } from '../../../shared/productivity'
-import {
-  addFavoriteDirectory,
-  listFavoriteDirectories,
-  removeFavoriteDirectory,
-} from '../services/favorites'
+import { useDirectoryFavoritesStore } from '../stores/directoryFavoritesStore'
+
+const EMPTY_FAVORITES: FavoriteDirectoryRecord[] = []
 
 export function useDirectoryFavorites(serverId: string | null) {
-  const [favorites, setFavorites] = useState<FavoriteDirectoryRecord[]>([])
-  const [loading, setLoading] = useState(false)
-
-  const refresh = useCallback(async () => {
-    if (!serverId) {
-      setFavorites([])
-      return
-    }
-
-    setLoading(true)
-    try {
-      const items = await listFavoriteDirectories(serverId)
-      setFavorites(items)
-    } catch (error) {
-      notifications.show({
-        title: 'Failed to load favorites',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        color: 'red',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [serverId])
+  const favorites = useDirectoryFavoritesStore((state) => {
+    if (!serverId) return EMPTY_FAVORITES
+    return state.cache[serverId] ?? EMPTY_FAVORITES
+  })
+  const loading = useDirectoryFavoritesStore(
+    (state) => state.loadingServerId === serverId && serverId !== null,
+  )
+  const load = useDirectoryFavoritesStore((state) => state.load)
+  const addFavorite = useDirectoryFavoritesStore((state) => state.add)
+  const removeFavorite = useDirectoryFavoritesStore((state) => state.remove)
 
   useEffect(() => {
-    void refresh()
-  }, [refresh])
-
-  const addFavorite = useCallback(
-    async (path: string, label?: string) => {
-      if (!serverId) return
-
-      try {
-        await addFavoriteDirectory({ serverId, path, label })
-        await refresh()
-        notifications.show({
-          title: 'Added to favorites',
-          message: path,
-          color: 'green',
-          autoClose: 2200,
-        })
-      } catch (error) {
-        notifications.show({
-          title: 'Could not add favorite',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          color: 'red',
-        })
-      }
-    },
-    [refresh, serverId],
-  )
-
-  const removeFavorite = useCallback(
-    async (id: string) => {
-      try {
-        await removeFavoriteDirectory(id)
-        await refresh()
-      } catch (error) {
-        notifications.show({
-          title: 'Could not remove favorite',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          color: 'red',
-        })
-      }
-    },
-    [refresh],
-  )
+    void load(serverId)
+  }, [load, serverId])
 
   return {
     favorites,
     loading,
-    addFavorite,
-    removeFavorite,
-    refresh,
+    addFavorite: (path: string, label?: string) => {
+      if (!serverId) return Promise.resolve()
+      return addFavorite(serverId, path, label)
+    },
+    removeFavorite: (id: string) => {
+      if (!serverId) return Promise.resolve()
+      return removeFavorite(id, serverId)
+    },
+    refresh: () => load(serverId),
   }
 }

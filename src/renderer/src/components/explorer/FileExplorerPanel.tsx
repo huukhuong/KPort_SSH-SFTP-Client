@@ -20,7 +20,7 @@ import {
   IconUpload,
 } from '@tabler/icons-react'
 import { useState } from 'react'
-import { useDirectoryFavorites } from '../../hooks/useDirectoryFavorites'
+import { useAddDirectoryFavorite } from '../../hooks/useAddDirectoryFavorite'
 import { useExplorerDropUpload } from '../../hooks/useExplorerDropUpload'
 import { useLocalRootPicker } from '../../hooks/useLocalRootPicker'
 import { useExplorerMutations } from '../../hooks/useExplorerMutations'
@@ -62,7 +62,7 @@ export function FileExplorerPanel({ side }: FileExplorerPanelProps) {
 
   const pathBarDisabled = side === 'remote' && Boolean(listError)
   const [searchOpen, setSearchOpen] = useState(false)
-  const { addFavorite } = useDirectoryFavorites(serverId ?? null)
+  const addFavorite = useAddDirectoryFavorite(serverId ?? null)
   const { pickLocalRoot } = useLocalRootPicker()
   const { uploadSelectedOrPick, uploadLocalFile, downloadRemoteFile } = useTransferActions()
   const { onDragOver, onDrop } = useExplorerDropUpload({

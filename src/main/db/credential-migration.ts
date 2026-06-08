@@ -1,16 +1,15 @@
+import type Database from 'better-sqlite3'
 import {
   decryptCredential,
   encryptCredential,
   isEncryptedCredential,
   isCredentialEncryptionAvailable,
 } from '../security/credentials'
-import { getDatabase } from './index'
 
-export function migratePlaintextCredentials(): void {
+export function migratePlaintextCredentials(database: Database.Database): void {
   if (!isCredentialEncryptionAvailable()) return
 
-  const db = getDatabase()
-  const rows = db
+  const rows = database
     .prepare('SELECT id, password_encrypted, private_key_path FROM servers')
     .all() as Array<{
     id: string
@@ -18,7 +17,7 @@ export function migratePlaintextCredentials(): void {
     private_key_path: string | null
   }>
 
-  const update = db.prepare(
+  const update = database.prepare(
     'UPDATE servers SET password_encrypted = ?, private_key_path = ? WHERE id = ?',
   )
 

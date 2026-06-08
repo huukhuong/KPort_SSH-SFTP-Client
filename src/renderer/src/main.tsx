@@ -10,6 +10,7 @@ import { IconThemeProvider } from 'react-material-icon-theme'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { theme } from './theme'
 
 createRoot(document.getElementById('root')!).render(
@@ -17,7 +18,9 @@ createRoot(document.getElementById('root')!).render(
     <MantineProvider theme={theme} defaultColorScheme="dark" forceColorScheme="dark">
       <IconThemeProvider initialConfig={{ folderTheme: 'specific' }}>
         <Notifications position="top-right" />
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </IconThemeProvider>
     </MantineProvider>
   </StrictMode>,

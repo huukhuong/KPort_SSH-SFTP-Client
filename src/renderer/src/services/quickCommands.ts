@@ -2,14 +2,16 @@ import type { QuickCommandInput } from '../../../shared/productivity'
 
 function getCommandsApi() {
   if (!window.kport?.commands) {
-    throw new Error('KPort commands API is not available')
+    return null
   }
 
   return window.kport.commands
 }
 
 export function listQuickCommands() {
-  return getCommandsApi().list()
+  const api = getCommandsApi()
+  if (!api) return Promise.resolve([])
+  return api.list()
 }
 
 export function createQuickCommand(input: QuickCommandInput) {
