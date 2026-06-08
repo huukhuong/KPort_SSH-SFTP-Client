@@ -16,6 +16,7 @@ export const IPC_CHANNELS = {
   SFTP_CREATE_FILE: 'sftp:createFile',
   SFTP_RENAME: 'sftp:rename',
   SFTP_DELETE: 'sftp:delete',
+  SFTP_UNZIP: 'sftp:unzip',
   FS_GET_PATHS: 'fs:getPaths',
   FS_LIST: 'fs:list',
   FS_READ_FILE: 'fs:readFile',

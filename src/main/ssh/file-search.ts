@@ -5,10 +5,7 @@ import {
   type FileSearchResult,
 } from '../../shared/productivity'
 import { connectionManager } from './connection-manager'
-
-function shellEscape(value: string): string {
-  return `'${value.replace(/'/g, `'\\''`)}'`
-}
+import { shellEscape } from './shell'
 
 function parseSearchOutput(output: string): FileSearchResult[] {
   return output

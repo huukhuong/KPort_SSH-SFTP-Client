@@ -1,6 +1,6 @@
 import type { LocalFileEntry, LocalPathsInfo } from './fs'
 import type { ServerMetrics } from './metrics'
-import type { RemoteFileEntry } from './sftp'
+import type { RemoteFileEntry, RemoteUnzipResult } from './sftp'
 import type { ServerFormInput, ServerRecord } from './server'
 import type { ConnectionStatus, SshConnectResult, SshTestInput, SshTestResult } from './ssh'
 import type {
@@ -50,6 +50,7 @@ export interface SftpApi {
   createFile: (serverId: string, parentPath: string, name: string) => Promise<string>
   rename: (serverId: string, fromPath: string, toPath: string) => Promise<void>
   delete: (serverId: string, path: string, type: 'file' | 'directory') => Promise<void>
+  unzip: (serverId: string, zipPath: string) => Promise<RemoteUnzipResult>
 }
 
 export interface FsApi {

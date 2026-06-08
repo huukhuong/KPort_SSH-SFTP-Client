@@ -20,7 +20,7 @@ import {
   isZipFile,
   normalizeExplorerPath,
 } from '../utils/fileTree'
-import { demoAction } from '../utils/demoNotify'
+import { useRemoteUnzip } from './useRemoteUnzip'
 
 export function useFileExplorer(side: 'local' | 'remote') {
   const isLocal = side === 'local'
@@ -64,6 +64,7 @@ export function useFileExplorer(side: 'local' | 'remote') {
 
   const { openFile } = useEditorActions()
   const { openTerminalHere } = useTerminal()
+  const { unzip: unzipRemote } = useRemoteUnzip(isLocal ? null : (serverId ?? null))
 
   const [contextMenu, setContextMenu] = useState<ExplorerContextTarget | null>(null)
   const [entries, setEntries] = useState<FileTreeNode[]>([])
@@ -200,10 +201,9 @@ export function useFileExplorer(side: 'local' | 'remote') {
       }
 
       if (isZipFile(node.path)) {
-        const detail = isLocal
-          ? `Extract ${node.path}`
-          : `Extract to ${node.path.replace(/\.zip$/i, '')}/`
-        demoAction('Unzip', detail)
+        if (!isLocal) {
+          void unzipRemote(node.path)
+        }
         return
       }
 
@@ -213,7 +213,7 @@ export function useFileExplorer(side: 'local' | 'remote') {
         serverId: isLocal ? null : serverId,
       })
     },
-    [isLocal, navigate, openFile, serverId],
+    [isLocal, navigate, openFile, serverId, unzipRemote],
   )
 
   const openContextMenu = useCallback(
@@ -269,6 +269,7 @@ export function useFileExplorer(side: 'local' | 'remote') {
       navigateHome,
       navigateUp,
       openTerminalHere: isLocal ? undefined : openTerminalHere,
+      unzipRemote: isLocal ? undefined : unzipRemote,
     },
   }
 }

@@ -55,3 +55,7 @@ export async function deleteRemoteEntry(
 ): Promise<void> {
   await getSftpApi().delete(serverId, path, type)
 }
+
+export async function unzipRemoteArchive(serverId: string, zipPath: string) {
+  return getSftpApi().unzip(serverId, zipPath)
+}

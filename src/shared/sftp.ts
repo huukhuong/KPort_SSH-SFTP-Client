@@ -5,3 +5,9 @@ export interface RemoteFileEntry {
   size?: number
   modifiedAt?: string
 }
+
+export interface RemoteUnzipResult {
+  zipPath: string
+  extractPath: string
+  installedUnzip: boolean
+}

@@ -3,8 +3,7 @@ import { useClickOutside } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
 import type { RefObject } from 'react'
 import type { FileTreeNode } from '../../types/fileTree'
-import { demoAction } from '../../utils/demoNotify'
-import { getFileName, isZipFile } from '../../utils/fileTree'
+import { isZipFile } from '../../utils/fileTree'
 import classes from '../../styles/layout.module.css'
 
 export interface ExplorerContextTarget {
@@ -24,6 +23,7 @@ interface ExplorerContextMenuProps {
   onDownload?: (node: FileTreeNode) => void
   onOpenTerminalHere?: (path: string) => void
   onAddFavorite?: (node: FileTreeNode) => void
+  onUnzip?: (node: FileTreeNode) => void
 }
 
 export function ExplorerContextMenu({
@@ -37,6 +37,7 @@ export function ExplorerContextMenu({
   onDownload,
   onOpenTerminalHere,
   onAddFavorite,
+  onUnzip,
 }: ExplorerContextMenuProps) {
   const isLocal = side === 'local'
   const menuRef = useClickOutside<HTMLDivElement>(onClose)
@@ -51,10 +52,6 @@ export function ExplorerContextMenu({
     onClose()
   }
 
-  const unzipDetail = isLocal
-    ? `Extract ${node.path}`
-    : `Extract to ${node.path.replace(/\.zip$/i, '')}/`
-
   return (
     <Paper
       ref={menuRef as RefObject<HTMLDivElement>}
@@ -63,14 +60,11 @@ export function ExplorerContextMenu({
       style={{ position: 'fixed', top: target.y, left: target.x, zIndex: 300 }}
       onContextMenu={(event) => event.preventDefault()}
     >
-      {zipFile ? (
-        <ContextItem
-          label="Unzip"
-          onClick={() => run(() => demoAction('Unzip', unzipDetail))}
-        />
-      ) : (
+      {zipFile && !isLocal && onUnzip ? (
+        <ContextItem label="Unzip" onClick={() => run(() => onUnzip(node))} />
+      ) : !zipFile ? (
         <ContextItem label="Open" onClick={() => run(() => onOpen(node))} />
-      )}
+      ) : null}
       <ContextItem label="Rename" onClick={() => run(() => onRename(node))} />
       <ContextItem
         label="Delete"
