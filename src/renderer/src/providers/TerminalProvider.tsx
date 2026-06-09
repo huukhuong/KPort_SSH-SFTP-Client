@@ -65,15 +65,35 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
   ])
   const [activeTabId, setActiveTabId] = useState('1')
   const terminalIdsRef = useRef<Record<string, string>>({})
+  const prevActiveServerIdRef = useRef<string | null>(null)
+  const wasConnectedRef = useRef(false)
 
   useEffect(() => {
-    if (!activeServerId || !isConnected) return
+    if (!activeServerId || !isConnected) {
+      if (!isConnected) {
+        terminalIdsRef.current = {}
+        wasConnectedRef.current = false
+      }
+      return
+    }
 
-    setTabs((current) =>
-      current.map((tab) =>
-        tab.serverId ? tab : { ...tab, serverId: activeServerId, title: createTabTitle(1, serverLabel) },
-      ),
-    )
+    const switchedServer = prevActiveServerIdRef.current !== activeServerId
+    const reconnected = !wasConnectedRef.current
+
+    prevActiveServerIdRef.current = activeServerId
+    wasConnectedRef.current = true
+
+    if (!switchedServer && !reconnected) return
+
+    terminalIdsRef.current = {}
+    setActiveTabId('1')
+    setTabs([
+      {
+        id: '1',
+        title: createTabTitle(1, serverLabel),
+        serverId: activeServerId,
+      },
+    ])
   }, [activeServerId, isConnected, serverLabel])
 
   const registerTerminalId = useCallback((tabId: string, terminalId: string) => {
