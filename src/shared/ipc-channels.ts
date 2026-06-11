@@ -47,6 +47,7 @@ export const IPC_CHANNELS = {
   FAVORITES_REMOVE: 'favorites:remove',
   COMMANDS_LIST: 'commands:list',
   COMMANDS_CREATE: 'commands:create',
+  COMMANDS_UPDATE: 'commands:update',
   COMMANDS_DELETE: 'commands:delete',
   SEARCH_FILES: 'search:files',
 } as const

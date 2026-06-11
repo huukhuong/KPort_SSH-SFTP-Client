@@ -21,6 +21,7 @@ import {
   IconX,
 } from '@tabler/icons-react'
 import { APP_SHORT_NAME, APP_TAGLINE } from '../../../../shared/app-brand'
+import type { QuickCommandRecord } from '../../../../shared/productivity'
 import { useAppSidebar } from '../../hooks/useAppSidebar'
 import type { Server, ServerStatus } from '../../types'
 import classes from '../../styles/layout.module.css'
@@ -28,9 +29,16 @@ import classes from '../../styles/layout.module.css'
 interface AppSidebarProps {
   onAddServer?: () => void
   onEditServer?: (server: Server) => void
+  onAddQuickCommand?: () => void
+  onEditQuickCommand?: (command: QuickCommandRecord) => void
 }
 
-export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
+export function AppSidebar({
+  onAddServer,
+  onEditServer,
+  onAddQuickCommand,
+  onEditQuickCommand,
+}: AppSidebarProps) {
   const { servers, activeServerId, loading, error, isEmpty, favorites, quickCommands, actions } =
     useAppSidebar()
 
@@ -154,15 +162,54 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
         </div>
 
         <div className={classes.sidebarSection}>
-          <Text px="sm" py={4} size="xs" fw={700} tt="uppercase" className={classes.sidebarSectionLabel}>
-            Quick Commands
-          </Text>
+          <Group px="sm" py={4} justify="space-between" wrap="nowrap">
+            <Text size="xs" fw={700} tt="uppercase" className={classes.sidebarSectionLabel}>
+              Quick Commands
+            </Text>
+            <ActionIcon
+              variant="subtle"
+              size="xs"
+              aria-label="Add quick command"
+              onClick={onAddQuickCommand}
+            >
+              <IconPlus size={12} />
+            </ActionIcon>
+          </Group>
+          {quickCommands.length === 0 && (
+            <Text px="sm" py="xs" size="xs" c="dimmed">
+              No quick commands yet. Click + to add one.
+            </Text>
+          )}
           {quickCommands.map((command) => (
             <NavLink
               key={command.id}
               label={command.label}
-              leftSection={
-                command.group === 'Nginx' ? <IconBolt size={16} /> : <IconTerminal2 size={16} />
+              leftSection={<QuickCommandIcon group={command.group} />}
+              rightSection={
+                <Group gap={2} wrap="nowrap">
+                  <ActionIcon
+                    variant="transparent"
+                    size="xs"
+                    aria-label={`Edit ${command.label}`}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onEditQuickCommand?.(command)
+                    }}
+                  >
+                    <IconEdit size={13} />
+                  </ActionIcon>
+                  <ActionIcon
+                    variant="transparent"
+                    size="xs"
+                    aria-label={`Remove ${command.label}`}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      void actions.removeQuickCommand(command.id)
+                    }}
+                  >
+                    <IconX size={12} />
+                  </ActionIcon>
+                </Group>
               }
               onClick={() => actions.injectCommand(command.command)}
             />
@@ -175,8 +222,17 @@ export function AppSidebar({ onAddServer, onEditServer }: AppSidebarProps) {
           Add Server
         </Button>
       </Stack>
+
     </Stack>
   )
+}
+
+function QuickCommandIcon({ group }: { group?: string }) {
+  if (group === 'Nginx') {
+    return <IconBolt size={16} />
+  }
+
+  return <IconTerminal2 size={16} />
 }
 
 function StatusDot({ status }: { status: ServerStatus }) {

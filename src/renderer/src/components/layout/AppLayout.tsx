@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { BOTTOM_HEADER_HEIGHT } from '../../constants/layout'
+import { useQuickCommandModal } from '../../hooks/useQuickCommandModal'
 import { useServerModal } from '../../hooks/useServerModal'
 import { registerBottomPanelExpand } from '../../stores/bottomPanelStore'
 import { useWorkspaceVisibility } from '../../hooks/useWorkspaceVisibility'
@@ -8,6 +9,7 @@ import { useWorkspaceResize } from '../../hooks/useWorkspaceResize'
 import { TerminalProvider } from '../../providers/TerminalProvider'
 import { FileExplorerPanel } from '../explorer/FileExplorerPanel'
 import { EditorPanel } from '../editor/EditorPanel'
+import { QuickCommandFormModal } from '../sidebar/QuickCommandFormModal'
 import { ServerFormModal } from '../server/ServerFormModal'
 import { AppSidebar } from '../sidebar/AppSidebar'
 import { AppHeader } from './AppHeader'
@@ -32,6 +34,11 @@ export function AppLayout() {
     toggleBottomPanel,
   } = useWorkspaceResize()
   const { opened: serverModalOpen, editingServer, actions: serverModalActions } = useServerModal()
+  const {
+    opened: quickCommandModalOpen,
+    editingCommand,
+    actions: quickCommandModalActions,
+  } = useQuickCommandModal()
   const {
     hasEditorTabs,
     showBottomPanel,
@@ -76,6 +83,8 @@ export function AppLayout() {
                 <AppSidebar
                   onAddServer={serverModalActions.openAdd}
                   onEditServer={serverModalActions.openEdit}
+                  onAddQuickCommand={quickCommandModalActions.openAdd}
+                  onEditQuickCommand={quickCommandModalActions.openEdit}
                 />
               </aside>
               <div
@@ -170,6 +179,11 @@ export function AppLayout() {
         opened={serverModalOpen}
         onClose={serverModalActions.close}
         editingServer={editingServer}
+      />
+      <QuickCommandFormModal
+        opened={quickCommandModalOpen}
+        onClose={quickCommandModalActions.close}
+        editingCommand={editingCommand}
       />
     </TerminalProvider>
   )

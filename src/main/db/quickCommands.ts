@@ -65,6 +65,30 @@ export function createQuickCommand(input: QuickCommandInput): QuickCommandRecord
   return rowToRecord(row)
 }
 
+export function updateQuickCommand(id: string, input: QuickCommandInput): QuickCommandRecord {
+  const db = getDatabase()
+  const result = db
+    .prepare(
+      `UPDATE quick_commands
+       SET label = ?, command = ?, group_name = ?
+       WHERE id = ?`,
+    )
+    .run(input.label.trim(), input.command.trim(), input.group?.trim() || null, id)
+
+  if (result.changes === 0) {
+    throw new Error(`Quick command not found: ${id}`)
+  }
+
+  const row = db
+    .prepare(
+      `SELECT id, label, command, group_name, sort_order, created_at
+       FROM quick_commands WHERE id = ?`,
+    )
+    .get(id) as QuickCommandRow
+
+  return rowToRecord(row)
+}
+
 export function deleteQuickCommand(id: string): void {
   const db = getDatabase()
   const result = db.prepare('DELETE FROM quick_commands WHERE id = ?').run(id)
