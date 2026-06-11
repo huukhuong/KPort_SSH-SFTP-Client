@@ -14,6 +14,7 @@ import {
   createQuickCommand,
   deleteQuickCommand,
   listQuickCommands,
+  updateQuickCommand,
 } from '../db/quickCommands'
 import { searchRemoteFiles } from '../ssh/file-search'
 
@@ -45,6 +46,10 @@ export function registerProductivityIpcHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.COMMANDS_CREATE, (_event, input: QuickCommandInput) =>
     wrapHandler(() => createQuickCommand(input)),
+  )
+
+  ipcMain.handle(IPC_CHANNELS.COMMANDS_UPDATE, (_event, id: string, input: QuickCommandInput) =>
+    wrapHandler(() => updateQuickCommand(id, input)),
   )
 
   ipcMain.handle(IPC_CHANNELS.COMMANDS_DELETE, (_event, id: string) =>

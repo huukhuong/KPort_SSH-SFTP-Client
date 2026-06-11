@@ -17,7 +17,7 @@ export function useAppSidebar() {
   const navigateRemote = useExplorerStore((state) => state.navigateRemote)
   const { injectCommand } = useTerminal()
   const { favorites, removeFavorite } = useDirectoryFavorites(activeServerId)
-  const { commands: quickCommands } = useQuickCommands()
+  const { commands: quickCommands, removeCommand } = useQuickCommands()
 
   const navigateFavorite = useCallback(
     (path: string) => {
@@ -71,6 +71,7 @@ export function useAppSidebar() {
       navigateFavorite,
       removeDirectoryFavorite: removeFavorite,
       injectCommand,
+      removeQuickCommand: removeCommand,
     },
   }
 }

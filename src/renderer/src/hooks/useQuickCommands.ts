@@ -1,31 +1,22 @@
-import { notifications } from '@mantine/notifications'
-import { useCallback, useEffect, useState } from 'react'
-import type { QuickCommandRecord } from '../../../shared/productivity'
-import { listQuickCommands } from '../services/quickCommands'
+import { useEffect } from 'react'
+import { useQuickCommandsStore } from '../stores/quickCommandsStore'
 
 export function useQuickCommands() {
-  const [commands, setCommands] = useState<QuickCommandRecord[]>([])
-  const [loading, setLoading] = useState(false)
-
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const items = await listQuickCommands()
-      setCommands(items)
-    } catch (error) {
-      notifications.show({
-        title: 'Failed to load quick commands',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        color: 'red',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const commands = useQuickCommandsStore((state) => state.commands)
+  const loading = useQuickCommandsStore((state) => state.loading)
+  const load = useQuickCommandsStore((state) => state.load)
+  const addCommand = useQuickCommandsStore((state) => state.add)
+  const removeCommand = useQuickCommandsStore((state) => state.remove)
 
   useEffect(() => {
-    void refresh()
-  }, [refresh])
+    void load()
+  }, [load])
 
-  return { commands, loading, refresh }
+  return {
+    commands,
+    loading,
+    addCommand,
+    removeCommand,
+    refresh: load,
+  }
 }

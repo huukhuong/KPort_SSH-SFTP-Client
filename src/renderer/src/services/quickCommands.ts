@@ -18,6 +18,10 @@ export function createQuickCommand(input: QuickCommandInput) {
   return getCommandsApi().create(input)
 }
 
+export function updateQuickCommand(id: string, input: QuickCommandInput) {
+  return getCommandsApi().update(id, input)
+}
+
 export function deleteQuickCommand(id: string) {
   return getCommandsApi().delete(id)
 }

@@ -103,6 +103,7 @@ export interface FavoritesApi {
 export interface CommandsApi {
   list: () => Promise<QuickCommandRecord[]>
   create: (input: QuickCommandInput) => Promise<QuickCommandRecord>
+  update: (id: string, input: QuickCommandInput) => Promise<QuickCommandRecord>
   delete: (id: string) => Promise<void>
 }
 

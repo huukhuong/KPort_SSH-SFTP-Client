@@ -158,6 +158,8 @@ const api: KPortApi = {
     list: () => ipcRenderer.invoke(IPC_CHANNELS.COMMANDS_LIST),
     create: (input: QuickCommandInput) =>
       ipcRenderer.invoke(IPC_CHANNELS.COMMANDS_CREATE, input),
+    update: (id: string, input: QuickCommandInput) =>
+      ipcRenderer.invoke(IPC_CHANNELS.COMMANDS_UPDATE, id, input),
     delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.COMMANDS_DELETE, id),
   },
   search: {
